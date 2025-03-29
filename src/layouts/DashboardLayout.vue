@@ -1,6 +1,6 @@
 <template>
-    <div>
-        Dashboard
-        <slot />
-    </div>
+  <div>
+    Dashboard
+    <slot />
+  </div>
 </template>
