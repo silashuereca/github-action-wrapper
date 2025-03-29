@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vue-tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint-check": "vue-tsc --noEmit -p tsconfig.vue-tsc.json --skipLibCheck"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.3",
@@ -31,6 +32,6 @@
     "prettier": "^3.5.3",
     "typescript": "~5.7.2",
     "vite": "^6.2.0",
-    "vue-tsc": "^2.2.4"
+    "vue-tsc": "^2.2.0"
   }
 }

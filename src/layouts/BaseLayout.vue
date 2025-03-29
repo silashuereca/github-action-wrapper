@@ -14,7 +14,7 @@ import DefaultLayout from "./DefaultLayout.vue";
 export default {
   setup() {
     const route = useRoute();
-    const layout = ref(DefaultLayout);
+    const layou = ref(DefaultLayout);
 
     watch(
       () => route.meta.layout,
