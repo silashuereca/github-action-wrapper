@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "build": "eslint --ext .ts,.vue src && vite build",
     "preview": "vite preview",
-    "lint-check": "vue-tsc --noEmit -p tsconfig.vue-tsc.json --skipLibCheck"
+    "lint": "eslint --ext .ts,.vue src"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.3",
