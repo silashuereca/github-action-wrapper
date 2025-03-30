@@ -37,9 +37,11 @@ type TState = {
   };
   form: {
     jobName: string;
+    pullRequestName: string;
     repo: string;
     runner: string;
     steps: any[];
+    workflowName: string;
   };
   repos: any[];
 };
@@ -50,7 +52,8 @@ const state: TState = reactive({
     user_name: "",
   },
   form: {
-    jobName: "Check Linting",
+    jobName: "Check Linting (Round 2)",
+    pullRequestName: "Linting Workflow Update", // Default pull request name
     repo: "github-action-wrapper",
     runner: "node", // Default runner
     steps: [
@@ -75,7 +78,7 @@ const state: TState = reactive({
       },
     ],
     trigger: "push", // Default trigger
-    workflowName: "Check Linting",
+    workflowName: "Check For No Lint Errors",
   },
   repos: [],
 });
@@ -112,7 +115,7 @@ async function getUsersRepos(): Promise<void> {
 
   const repos = response.data.filter((repo) => !repo.fork && !repo.archived);
 
-  console.log("Repose", repos);
+  console.log("Repos", repos);
   state.repos = repos;
 }
 
@@ -148,8 +151,34 @@ async function buildWorkflow(): Promise<void> {
       // This is expected if the file hasn't been created yet
       console.log("File does not exist.");
     }
+    // need to get the latest commit SHA of the file if it exists
+    const mainBranch = await octokit.request("GET /repos/{owner}/{repo}/git/ref/heads/main", {
+      owner: userName,
+      repo: state.form.repo,
+    });
+    const latestMainSha = mainBranch.data?.object?.sha;
+
+    if (!latestMainSha) {
+      console.error("Could not find the latest SHA for the main branch.");
+      return;
+    }
+    //probably need to get a list of branches to ensure we are creating a new branch or updating an existing one
+    //create a new branch for the changes
+    const branchName = "feat-testing-workflow-changes";
+    const branchResponse = await octokit.request("POST /repos/{owner}/{repo}/git/refs", {
+      headers: {
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+      owner: userName,
+      ref: `refs/heads/${branchName}`,
+      repo: state.form.repo,
+      sha: latestMainSha, // Now using latest commit from main
+    });
+
+    console.log("Branch Created:", branchResponse);
 
     const variables = {
+      branch: branchName, // Branch where the changes will be pushed
       committer: {
         email: state.authUser.email, // Your email associated with the GitHub account
         name: state.authUser.user_name, // Your GitHub username
@@ -175,7 +204,25 @@ async function buildWorkflow(): Promise<void> {
       ...variables,
     });
 
-    console.log("File exists", response);
+    console.log("Committed File Contents to branch", response);
+
+    // Need to create a pull request to request merging the changes from the new branch that was created
+    const pullRequestResponse = await octokit.request("POST /repos/{owner}/{repo}/pulls", {
+      base: "main", // Base branch to compare against
+      body: `This pull request updates the workflow file for ${state.form.workflowName}.`, // Description of the pull request
+      head: branchName, // Branch where the changes will be pushed
+      headers: {
+        accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+      },
+      owner: userName,
+      repo: state.form.repo,
+      title: state.form.pullRequestName, // Title of the pull request
+    });
+
+    console.log("Pull Request Created:", pullRequestResponse);
+
+    // console.log("File exists", response);
   } catch (error) {
     console.error("Error creating/updating file:", error.message);
   }
