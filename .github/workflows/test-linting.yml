@@ -1,5 +1,5 @@
 jobs:
-  check-linting:
+  check-linting-(round-2):
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -12,5 +12,5 @@ jobs:
         run: npm install
       - name: Run linter
         run: npm run lint
-name: Check Linting
+name: Check For No Lint Errors
 on: push
