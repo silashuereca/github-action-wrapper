@@ -1,5 +1,4 @@
-Generated Workflow YAML:
- name: Check Linting
+name: Check Linting
 on: push
 jobs:
   run-linter:
