@@ -69,7 +69,7 @@ const state: TState = reactive({
         name: "Setup Node.js",
         uses: "actions/setup-node@v2",
         with: {
-          node_version: 16, // Default Node.js version
+          node_version: 22, // Default Node.js version
         },
       },
       {
@@ -135,6 +135,6 @@ function buildWorkflow(): void {
 
   // Here you can do something with the generated YAML, like saving it to a file,
   // sending it to an API, or displaying it in the console.
-  console.log("Generated Workflow YAML:\n", yamlContent);
+  console.log(yamlContent);
 }
 </script>
