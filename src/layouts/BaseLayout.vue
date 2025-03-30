@@ -5,11 +5,11 @@
 </template>
 
 <script>
+import DefaultLayout from "./DefaultLayout.vue";
 import { ref, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import DashboardLayout from "./DashboardLayout.vue";
-import DefaultLayout from "./DefaultLayout.vue";
 
 export default {
   setup() {
