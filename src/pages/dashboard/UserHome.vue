@@ -1,15 +1,24 @@
 <template>
   <div>
-    Projects UI Will Go Here
+    <DataTable>
+      <Column field="name" header="Name" />
+      <Column field="description" header="Description" />
+      <Column field="created_at" header="Created At" />
+    </DataTable>
+    <button type="button" @click="logout">
+      Logout
+    </button>
   </div>
 </template>
 
 <script lang="ts" setup>
 // import Buffer from "buffer";
 import { Octokit } from "octokit";
+import Column from "primevue/column";
+import DataTable from "primevue/datatable";
 import { onMounted, reactive } from "vue";
+import { useRouter } from "vue-router";
 
-// import { useRouter } from "vue-router";
 import { supabase } from "../../../supabase";
 import { useAppStore } from "../../store";
 // import { generateYamlFromForm } from "../../utils/build_yaml";
@@ -19,17 +28,17 @@ type TState = {
     email: string;
     user_name: string;
   };
-  form: {
-    jobName: string;
-    pullRequestName: string;
-    repo: string;
-    runner: string;
-    steps: any[];
-    workflowName: string;
-  };
+  // form: {
+  //   jobName: string;
+  //   pullRequestName: string;
+  //   repo: string;
+  //   runner: string;
+  //   steps: any[];
+  //   workflowName: string;
+  // };
   repos: any[];
 };
-// const router = useRouter();
+const router = useRouter();
 const { setHeader } = useAppStore();
 setHeader("Projects");
 const state: TState = reactive({
@@ -37,35 +46,35 @@ const state: TState = reactive({
     email: "",
     user_name: "",
   },
-  form: {
-    jobName: "Check Linting (Round 2)",
-    pullRequestName: "Linting Workflow Update", // Default pull request name
-    repo: "github-action-wrapper",
-    runner: "node", // Default runner
-    steps: [
-      {
-        name: "Checkout code",
-        uses: "actions/checkout@v2",
-      },
-      {
-        name: "Setup Node.js",
-        uses: "actions/setup-node@v2",
-        with: {
-          node_version: 22, // Default Node.js version
-        },
-      },
-      {
-        name: "Install dependencies",
-        run: "npm install",
-      },
-      {
-        name: "Run linter",
-        run: "npm run lint", // Assuming you have a lint script in your package.json
-      },
-    ],
-    trigger: "push", // Default trigger
-    workflowName: "Check For No Lint Errors",
-  },
+  // form: {
+  //   jobName: "Check Linting (Round 2)",
+  //   pullRequestName: "Linting Workflow Update", // Default pull request name
+  //   repo: "github-action-wrapper",
+  //   runner: "node", // Default runner
+  //   steps: [
+  //     {
+  //       name: "Checkout code",
+  //       uses: "actions/checkout@v2",
+  //     },
+  //     {
+  //       name: "Setup Node.js",
+  //       uses: "actions/setup-node@v2",
+  //       with: {
+  //         node_version: 22, // Default Node.js version
+  //       },
+  //     },
+  //     {
+  //       name: "Install dependencies",
+  //       run: "npm install",
+  //     },
+  //     {
+  //       name: "Run linter",
+  //       run: "npm run lint", // Assuming you have a lint script in your package.json
+  //     },
+  //   ],
+  //   trigger: "push", // Default trigger
+  //   workflowName: "Check For No Lint Errors",
+  // },
   repos: [],
 });
 
@@ -77,10 +86,10 @@ onMounted(async () => {
   getUsersRepos();
 });
 
-// async function logout() {
-//   await supabase.auth.signOut();
-//   router.push("/sign-in");
-// }
+async function logout() {
+  await supabase.auth.signOut();
+  router.push("/sign-in");
+}
 
 async function getUsersRepos(): Promise<void> {
   const { data } = await supabase.auth.getSession();

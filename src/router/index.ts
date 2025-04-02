@@ -4,9 +4,21 @@ import { supabase } from "../../supabase";
 
 const routes = [
   {
+    component: () => import("../pages/dashboard/ProjectEdit.vue"),
+    meta: { layout: "dashboard" },
+    name: "project-edit",
+    path: "/project/:id",
+  },
+  {
+    component: () => import("../pages/dashboard/ProjectsCreated.vue"),
+    meta: { layout: "dashboard" },
+    name: "projects-created",
+    path: "/",
+  },
+  {
     component: () => import("../pages/dashboard/UserHome.vue"),
     meta: { layout: "dashboard" },
-    path: "/",
+    path: "/user-home",
   },
   {
     component: () => import("../pages/SignUp.vue"),
