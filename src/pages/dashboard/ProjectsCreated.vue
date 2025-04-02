@@ -1,5 +1,15 @@
 <template>
   <div>
+    <div class="mb-4 flex items-center justify-end"> 
+      <Button
+        type="button"
+        label="Create Project"
+        severity="contrast"
+        size="small"
+        class="mt-5"
+        @click="showModal()"
+      />
+    </div>
     <DataTable v-show="state.projects.length" :value="state.projects" class="w-full">
       <Column field="name" header="Name" />
       <Column field="description" header="Description" />
@@ -62,6 +72,7 @@
           type="button"
           label="Create"
           severity="contrast"
+          size="small"
           :loading="state.loading.creatingProject"
           @click="createProject()"
         />
