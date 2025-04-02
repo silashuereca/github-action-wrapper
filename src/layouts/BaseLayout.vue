@@ -5,7 +5,7 @@
 </template>
 
 <script>
-import { ref, watch } from "vue";
+import { shallowRef, watch } from "vue";
 import { useRoute } from "vue-router";
 
 import DashboardLayout from "./DashboardLayout.vue";
@@ -14,7 +14,7 @@ import DefaultLayout from "./DefaultLayout.vue";
 export default {
   setup() {
     const route = useRoute();
-    const layout = ref(DefaultLayout);
+    const layout = shallowRef(DefaultLayout);
 
     watch(
       () => route.meta.layout,
