@@ -1,28 +1,47 @@
 <template>
   <div>
-    <div class="mb-4 flex items-center justify-end"> 
-      <Button
-        type="button"
-        label="Create Project"
-        severity="contrast"
-        size="small"
-        class="mt-5"
-        @click="showModal()"
-      />
-    </div>
-    <DataTable v-show="state.projects.length" :value="state.projects" class="w-full">
-      <Column field="name" header="Name" />
-      <Column field="description" header="Description" />
+    <DataTable
+      v-show="state.repositories.length"
+      v-model:filters="state.filters"
+      :value="state.repositories"
+      filter-display="row"
+      :global-filter-fields="['full_name']"
+      class="w-full"
+    >
+      <Column field="full_name" header="Name">
+        <template #body="slotProps">
+          <a
+            :href="slotProps.data.svn_url"
+            class="text-blue-600 hover:opacity-85"
+            target="blank"
+            rel="noopener"
+            v-text="slotProps.data.full_name"
+          />
+        </template>
+        <template #filter="{ filterModel, filterCallback }">
+          <InputText v-model="filterModel.value" type="text" placeholder="Search by name" @input="filterCallback()" />
+        </template>
+      </Column>
       <Column field="created_at" header="Created At">
         <template #body="slotProps">
           <div class="flex items-center justify-between">
             <p v-text="slotProps.data.created_at" />
             <Button
+              v-show="showCreateButton(slotProps.data.id)"
+              severity="contrast"
+              type="button"
+              size="small"
+              label="Create"
+              :loading="state.loading.repositoryIdBeingCreated === slotProps.data.id"
+              @click="createProject(slotProps.data.id)"
+            />
+            <Button
+              v-show="showViewButton(slotProps.data.id)"
               severity="secondary"
               type="button"
               size="small"
               label="View"
-              @click="viewProject(slotProps.data.id)"
+              @click="viewProject(slotProps.data)"
             />
           </div>
         </template>
@@ -35,79 +54,37 @@
         stroke-width="4"
       />
     </div>
-
-    <div v-show="!state.projects.length && !state.loading.projects" class="text-center mt-4">
-      <div>
-        <p class="text-sm text-gray-400">
-          You can create a new project to get started.
-        </p>
-
-        <Button
-          type="button"
-          label="Create Project"
-          severity="contrast"
-          size="small"
-          class="mt-5"
-          @click="showModal()"
-        />
-      </div>
-    </div>
-
-    <Modal v-model:visible="state.showModal" modal header="Create Project" :style="{ width: '40rem' }">
-      <div class="mt-2">
-        <FloatLabel variant="on">
-          <InputText id="name" v-model="state.form.name" type="text" class="w-full" />
-          <label for="name">Name</label>
-        </FloatLabel>
-      </div>
-      <div class="mt-5">
-        <FloatLabel variant="on">
-          <Textarea id="description" v-model="state.form.description" type="text" class="w-full" />
-          <label for="description">Description</label>
-        </FloatLabel>
-      </div>
-
-      <div class="mt-10 flex justify-end">
-        <Button
-          type="button"
-          label="Create"
-          severity="contrast"
-          size="small"
-          :loading="state.loading.creatingProject"
-          @click="createProject()"
-        />
-      </div>
-    </Modal>
   </div>
 </template>
 
 <script lang="ts" setup>
+import { DataTableFilterMeta } from "primevue";
 import Button from "primevue/button";
 import Column from "primevue/column";
 import DataTable from "primevue/datatable";
-import Modal from "primevue/dialog";
-import FloatLabel from "primevue/floatlabel";
 import InputText from "primevue/inputtext";
 import ProgressSpinner from "primevue/progressspinner";
-import Textarea from "primevue/textarea";
 import { onMounted, reactive } from "vue";
 import { Router, useRouter } from "vue-router";
 
+import { GithubApi } from "../../api/github/api";
+import { TRepository } from "../../api/github/types";
 import { ProjectApi } from "../../api/projects/api";
 import { TProject } from "../../api/projects/types";
 import { useAppStore } from "../../store";
 
 type TState = {
+  filters: DataTableFilterMeta; // For DataTable filtering
   form: {
     description: string;
     name: string;
   };
   loading: {
-    creatingProject: boolean;
     projects: boolean;
+    repositoryIdBeingCreated: number | null;
   };
   projects: TProject[];
-  showModal: boolean;
+  repositories: TRepository[];
 };
 
 const router: Router = useRouter();
@@ -116,51 +93,62 @@ const { setHeader } = useAppStore();
 setHeader("Projects");
 
 const state: TState = reactive({
+  filters: {
+    full_name: { matchMode: "contains", value: null },
+  },
   form: {
     description: "",
     name: "",
   },
   loading: {
-    creatingProject: false,
     projects: false,
+    repositoryIdBeingCreated: null,
   },
   projects: [],
-  showModal: false,
+  repositories: [],
 });
 
-onMounted(() => {
+onMounted(async () => {
+  await GithubApi.init();
   state.loading.projects = true;
-  fetchProjects();
+  fetchReps();
 });
 
-async function fetchProjects(): Promise<void> {
+async function fetchReps(): Promise<void> {
   try {
-    const projects = await projectApi.getAll();
-    state.projects = projects;
+    state.projects = await projectApi.getAll();
+    state.repositories = await GithubApi.getRepositories();
   } finally {
     state.loading.projects = false;
   }
 }
 
-function showModal(): void {
-  state.showModal = true;
+function showCreateButton(repoId: number): boolean {
+  if (!state.projects.length) {
+    return true;
+  }
+
+  const found = state.projects.some((project) => project.repository_id === repoId);
+  return found ? false : true;
 }
 
-async function createProject(): Promise<void> {
-  state.loading.creatingProject = true;
+function showViewButton(repoId: number): boolean {
+  return state.projects.some((project) => project.repository_id === repoId);
+}
+
+async function createProject(repoId: number): Promise<void> {
+  state.loading.repositoryIdBeingCreated = repoId;
   try {
-    await projectApi.create({
-      description: state.form.description,
-      name: state.form.name,
-    });
-    await fetchProjects();
+    await projectApi.create({ repoId });
+    state.projects = await projectApi.getAll();
   } finally {
-    state.loading.creatingProject = false;
-    state.showModal = false;
+    state.loading.repositoryIdBeingCreated = null;
   }
 }
 
-function viewProject(projectId: string): void {
-  router.push({ name: "project-edit", params: { id: projectId } });
+async function viewProject(repo: TRepository): Promise<void> {
+  const project = state.projects.find((project) => project.repository_id === repo.id);
+  await router.push({ name: "project-workflows", params: { id: project.id } });
+  setHeader(repo.full_name, { projectSet: true });
 }
 </script>
