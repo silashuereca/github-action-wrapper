@@ -4,10 +4,10 @@ import { supabase } from "../../supabase";
 
 const routes = [
   {
-    component: () => import("../pages/dashboard/ProjectEdit.vue"),
+    component: () => import("../pages/dashboard/ProjectView.vue"),
     meta: { layout: "dashboard" },
-    name: "project-edit",
-    path: "/project/:id",
+    name: "project-workflows",
+    path: "/project/:id/workflows",
   },
   {
     component: () => import("../pages/dashboard/ProjectsCreated.vue"),
@@ -18,16 +18,19 @@ const routes = [
   {
     component: () => import("../pages/dashboard/UserHome.vue"),
     meta: { layout: "dashboard" },
+    name: "user-home",
     path: "/user-home",
   },
   {
     component: () => import("../pages/SignUp.vue"),
     meta: { layout: "default" },
+    name: "sign-up", // Named route for easier navigation
     path: "/sign-up",
   },
   {
     component: () => import("../pages/SignIn.vue"),
     meta: { layout: "default" },
+    name: "sign-in", // Named route for easier navigation
     path: "/sign-in",
   },
 ];

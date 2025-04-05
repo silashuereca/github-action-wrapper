@@ -3,7 +3,6 @@ import { TProject } from "./types";
 export class ProjectApi {
   async getAll(): Promise<TProject[]> {
     const { data, error } = await supabase.from("projects").select("*").order("created_at", { ascending: false });
-
     if (error) {
       throw new Error(error.message);
     }
@@ -11,14 +10,14 @@ export class ProjectApi {
     return data;
   }
 
-  async create(variables: { description: string; name: string }): Promise<{ success: boolean }> {
+  async create(variables: { repoId: number }): Promise<{ success: boolean }> {
+    const { repoId } = variables;
     const {
       data: { user },
     } = await supabase.auth.getUser();
     const { error } = await supabase.from("projects").insert([
       {
-        description: variables.description,
-        name: variables.name,
+        repository_id: repoId,
         user_id: user.id,
       },
     ]);
