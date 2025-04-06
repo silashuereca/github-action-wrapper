@@ -6,6 +6,12 @@ import { TRepository } from "./types";
 export class GithubApi {
   static providerToken: string | null = null;
 
+  protected static async redirectIfUnauthenticated(status: number): Promise<void> {
+    if (status === 401) {
+      await supabase.auth.signOut();
+    }
+  }
+
   static async init() {
     const {
       data: { session },
@@ -22,18 +28,21 @@ export class GithubApi {
     const octokit = new Octokit({
       auth: this.providerToken,
     });
-    const response = await octokit.request("GET /user/repos?affiliation=owner", {
-      headers: {
-        accept: "application/vnd.github+json",
-        "X-GitHub-Api-Version": "2022-11-28",
-      },
-    });
 
-    if (response.status !== 200) {
-      console.error("Failed to fetch user repos:", response.statusText);
-      return;
+    let repos: TRepository[] = [];
+    try {
+      const response = await octokit.request("GET /user/repos?affiliation=owner", {
+        headers: {
+          accept: "application/vnd.github+json",
+          "X-GitHub-Api-Version": "2022-11-28",
+        },
+      });
+
+      repos = response.data.filter((repo) => !repo.fork && !repo.archived);
+    } catch (error) {
+      await this.redirectIfUnauthenticated(error.status);
     }
 
-    return response.data.filter((repo) => !repo.fork && !repo.archived);
+    return repos;
   }
 }
