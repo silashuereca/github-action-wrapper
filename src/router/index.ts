@@ -16,10 +16,10 @@ const routes = [
     path: "/",
   },
   {
-    component: () => import("../pages/dashboard/UserHome.vue"),
+    component: () => import("../pages/dashboard/UserSettings.vue"),
     meta: { layout: "dashboard" },
-    name: "user-home",
-    path: "/user-home",
+    name: "user-settings",
+    path: "/settings",
   },
   {
     component: () => import("../pages/SignUp.vue"),

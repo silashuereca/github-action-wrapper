@@ -19,7 +19,7 @@
           />
         </template>
         <template #filter="{ filterModel, filterCallback }">
-          <InputText v-model="filterModel.value" type="text" placeholder="Search by name" @input="filterCallback()" />
+          <InputText v-model="filterModel.value" type="text" placeholder="Search..." @input="filterCallback()" />
         </template>
       </Column>
       <Column field="created_at" header="Created At">
@@ -31,7 +31,7 @@
               severity="contrast"
               type="button"
               size="small"
-              label="Create"
+              label="Create Project"
               :loading="state.loading.repositoryIdBeingCreated === slotProps.data.id"
               @click="createProject(slotProps.data.id)"
             />

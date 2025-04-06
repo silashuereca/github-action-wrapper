@@ -1,10 +1,5 @@
 <template>
   <div>
-    <DataTable>
-      <Column field="name" header="Name" />
-      <Column field="description" header="Description" />
-      <Column field="created_at" header="Created At" />
-    </DataTable>
     <button type="button" @click="logout">
       Logout
     </button>
@@ -13,105 +8,19 @@
 
 <script lang="ts" setup>
 // import Buffer from "buffer";
-import { Octokit } from "octokit";
-import Column from "primevue/column";
-import DataTable from "primevue/datatable";
-import { onMounted, reactive } from "vue";
 import { useRouter } from "vue-router";
 
 import { supabase } from "../../../supabase";
 import { useAppStore } from "../../store";
 // import { generateYamlFromForm } from "../../utils/build_yaml";
 
-type TState = {
-  authUser: {
-    email: string;
-    user_name: string;
-  };
-  // form: {
-  //   jobName: string;
-  //   pullRequestName: string;
-  //   repo: string;
-  //   runner: string;
-  //   steps: any[];
-  //   workflowName: string;
-  // };
-  repos: any[];
-};
 const router = useRouter();
 const { setHeader } = useAppStore();
-setHeader("Projects");
-const state: TState = reactive({
-  authUser: {
-    email: "",
-    user_name: "",
-  },
-  // form: {
-  //   jobName: "Check Linting (Round 2)",
-  //   pullRequestName: "Linting Workflow Update", // Default pull request name
-  //   repo: "github-action-wrapper",
-  //   runner: "node", // Default runner
-  //   steps: [
-  //     {
-  //       name: "Checkout code",
-  //       uses: "actions/checkout@v2",
-  //     },
-  //     {
-  //       name: "Setup Node.js",
-  //       uses: "actions/setup-node@v2",
-  //       with: {
-  //         node_version: 22, // Default Node.js version
-  //       },
-  //     },
-  //     {
-  //       name: "Install dependencies",
-  //       run: "npm install",
-  //     },
-  //     {
-  //       name: "Run linter",
-  //       run: "npm run lint", // Assuming you have a lint script in your package.json
-  //     },
-  //   ],
-  //   trigger: "push", // Default trigger
-  //   workflowName: "Check For No Lint Errors",
-  // },
-  repos: [],
-});
-
-onMounted(async () => {
-  const session = await supabase.auth.getSession();
-  const userMetadata = session.data.session?.user.user_metadata;
-  state.authUser.email = userMetadata.email;
-  state.authUser.user_name = userMetadata.user_name;
-  getUsersRepos();
-});
+setHeader("Settings");
 
 async function logout() {
   await supabase.auth.signOut();
   router.push("/sign-in");
-}
-
-async function getUsersRepos(): Promise<void> {
-  const { data } = await supabase.auth.getSession();
-  const octokit = new Octokit({
-    auth: data.session?.provider_token,
-  });
-  const response = await octokit.request("GET /user/repos?affiliation=owner", {
-    headers: {
-      accept: "application/vnd.github+json",
-      "X-GitHub-Api-Version": "2022-11-28",
-    },
-  });
-
-  if (response.status !== 200) {
-    console.error("Failed to fetch user repos:", response.statusText);
-    return;
-  }
-
-  const repos = response.data.filter((repo) => !repo.fork && !repo.archived);
-
-  console.log("Repos", repos);
-  state.repos = repos;
 }
 
 // async function buildWorkflow(): Promise<void> {
