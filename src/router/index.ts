@@ -22,6 +22,18 @@ const routes = [
     path: "/settings",
   },
   {
+    component: () => import("../pages/dashboard/WorkflowCreate.vue"),
+    meta: { layout: "dashboard" },
+    name: "workflow-create",
+    path: "/project/:id/workflows/create",
+  },
+  {
+    component: () => import("../pages/dashboard/WorkflowEdit.vue"),
+    meta: { layout: "dashboard" },
+    name: "workflow-edit",
+    path: "/project/:id/workflows/edit/:workflowId",
+  },
+  {
     component: () => import("../pages/SignUp.vue"),
     meta: { layout: "default" },
     name: "sign-up", // Named route for easier navigation
