@@ -35,26 +35,13 @@
       </div>
     </div>
     <main class="lg:pl-20">
-      <div :class="{'lg:pl-72': route.path !== '/', 'xl:pl-5': route.path === '/'}">
+      <div class="xl:pl-5">
         <div class="px-4 sm:px-6 lg:px-8 py-6">
           <h3 v-show="route.path === '/'" class="font-bold text-xl" v-text="state.header" />
           <slot />
         </div>
       </div>
     </main>
-
-    <aside v-if="route.path !== '/'" class="fixed inset-y-0 left-20 hidden w-72 overflow-y-auto border-r border-gray-200 px-4 py-6 sm:px-6 lg:px-8 xl:block">
-      <h2 class="text-sm font-bold truncate my-4" v-text="state.header" />
-      <ul role="list" class="-mx-2 space-y-1">
-        <li>
-          <!-- Current: "bg-gray-50 text-indigo-600", Default: "text-gray-700 hover:text-indigo-600 hover:bg-gray-50" -->
-          <router-link :to="{ name: 'project-workflows', params: { id: projectId }}" class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-600" :class="[activeSubRouteClass('project-workflows')]">
-            <IconSquareStack class="size-6" />
-            Workflows
-          </router-link>
-        </li>
-      </ul>
-    </aside>
   </div>
 </template>
 
@@ -62,23 +49,14 @@
 import { useRoute } from "vue-router";
 
 import IconSettings from "../icons/IconSettings.vue";
-import IconSquareStack from "../icons/IconSquareStack.vue";
 import { useAppStore } from "../store";
 const { state } = useAppStore();
 const route = useRoute();
-const projectId = route.params.id as string | undefined;
 function activeRouteClass(routeName: string): string {
   if (route.name === routeName) {
     return "bg-gray-800 text-white";
   }
   return "text-gray-400 hover:text-white hover:bg-gray-800";
-}
-
-function activeSubRouteClass(routeName: string): string {
-  if (route.name === routeName) {
-    return "bg-gray-50";
-  }
-  return "hover:bg-gray-50";
 }
 </script>
 
