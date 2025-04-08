@@ -4,15 +4,9 @@ import { supabase } from "../../supabase";
 
 const routes = [
   {
-    component: () => import("../pages/dashboard/ProjectView.vue"),
+    component: () => import("../pages/dashboard/HomeView.vue"),
     meta: { layout: "dashboard" },
-    name: "project-workflows",
-    path: "/project/:id/workflows",
-  },
-  {
-    component: () => import("../pages/dashboard/ProjectsCreated.vue"),
-    meta: { layout: "dashboard" },
-    name: "projects-created",
+    name: "home",
     path: "/",
   },
   {
@@ -20,18 +14,6 @@ const routes = [
     meta: { layout: "dashboard" },
     name: "user-settings",
     path: "/settings",
-  },
-  {
-    component: () => import("../pages/dashboard/WorkflowCreate.vue"),
-    meta: { layout: "dashboard" },
-    name: "workflow-create",
-    path: "/project/:id/workflows/create",
-  },
-  {
-    component: () => import("../pages/dashboard/WorkflowEdit.vue"),
-    meta: { layout: "dashboard" },
-    name: "workflow-edit",
-    path: "/project/:id/workflows/edit/:workflowId",
   },
   {
     component: () => import("../pages/SignUp.vue"),
