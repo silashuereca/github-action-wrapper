@@ -43,6 +43,7 @@
 </template>
 
 <script lang="ts" setup>
+import { onMounted } from "vue";
 import { useRoute } from "vue-router";
 
 import IconCurrencyDollar from "../icons/IconCurrencyDollar.vue";
@@ -51,6 +52,12 @@ import IconSettings from "../icons/IconSettings.vue";
 import { useAppStore } from "../store";
 const { state } = useAppStore();
 const route = useRoute();
+
+onMounted(() => {
+  //clean up auth state
+  window.history.replaceState({}, document.title, window.location.pathname);
+});
+
 function activeRouteClass(routeName: string): string {
   if (route.name === routeName) {
     return "bg-gray-800 text-white";
