@@ -9,6 +9,13 @@ const routes = [
     name: "home",
     path: "/",
   },
+  // budget
+  {
+    component: () => import("../pages/dashboard/budget/HomeView.vue"),
+    meta: { layout: "dashboard" },
+    name: "budget",
+    path: "/budget",
+  },
   {
     component: () => import("../pages/dashboard/UserSettings.vue"),
     meta: { layout: "dashboard" },
