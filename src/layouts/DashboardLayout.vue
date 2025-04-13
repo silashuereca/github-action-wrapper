@@ -71,7 +71,6 @@
                 <li>
                   <ul role="list" class="-mx-2 space-y-1">
                     <li>
-                      <!-- Current: "bg-gray-800 text-white", Default: "text-gray-400 hover:text-white hover:bg-gray-800" -->
                       <a href="#" class="group flex gap-x-3 rounded-md bg-gray-800 p-2 text-sm/6 font-semibold text-white">
                         <svg
                           class="size-6 shrink-0"
@@ -176,7 +175,6 @@
                   </div>
                   <ul role="list" class="-mx-2 mt-2 space-y-1">
                     <li>
-                      <!-- Current: "bg-gray-800 text-white", Default: "text-gray-400 hover:text-white hover:bg-gray-800" -->
                       <a href="#" class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white">
                         <span class="flex size-6 shrink-0 items-center justify-center rounded-lg border border-gray-700 bg-gray-800 text-[0.625rem] font-medium text-gray-400 group-hover:text-white">H</span>
                         <span class="truncate">Heroicons</span>
@@ -268,7 +266,7 @@
     <div class="flex">
       <div class="lg:pl-72" />
       <main class="py-10 w-full">
-        <div class="px-4 sm:px-6 lg:px-8 max-w-6xl bg-green-200 w-full m-auto">
+        <div class="px-4 sm:px-6 lg:px-8 max-w-6xl w-full m-auto">
           <!-- Your content -->
           <router-view />
         </div>
