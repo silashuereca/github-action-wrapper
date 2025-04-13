@@ -38,7 +38,7 @@
 
 <script lang="ts" setup>
 import { DateTime } from "luxon";
-import { Button, Card, DatePicker, Divider, Panel } from "primevue";
+import { Button, Card, DatePicker, Panel } from "primevue";
 import { onMounted, reactive } from "vue";
 
 import { supabase } from "../../../../supabase";
