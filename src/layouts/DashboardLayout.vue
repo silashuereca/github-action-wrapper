@@ -31,7 +31,7 @@
         </router-link>
       </div>
     </div>
-    <main class="lg:pl-20">
+    <main class="lg:pl-20 max-w-6xl">
       <div class="xl:pl-5">
         <div class="px-4 sm:px-6 lg:px-8 py-6">
           <h3 v-show="route.path === '/'" class="font-bold text-xl" v-text="state.header" />
