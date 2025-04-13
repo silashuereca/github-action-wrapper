@@ -2,14 +2,7 @@
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "[typescript]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  },
   "css.validate": false,
-  "deno.enablePaths": [
-    "supabase/functions"
-  ],
-  "deno.lint": true,
   "deno.unstable": [
     "bare-node-builtins",
     "byonm",
@@ -41,6 +34,8 @@
   "files.insertFinalNewline": true,
   "less.validate": false,
   "scss.validate": false,
-  "vetur.validation.style": false,
-  "vetur.validation.template": false
+  "deno.enable": true,
+  "deno.lint": true,
+  "deno.enablePaths": ["./supabase/functions"],
+  "deno.importMap": "./supabase/functions/import_map.json",
 }
