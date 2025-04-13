@@ -20,6 +20,7 @@
 <script lang="ts" setup>
 import { Button, DatePicker } from "primevue";
 import { onMounted, reactive } from "vue";
+import { supabase } from "../../../../supabase";
 
 type TState = {
   selectedMonth: Date;
@@ -41,9 +42,12 @@ function setDefaultDate(): void {
 
 function selectMonth(value: Date): void {
   console.log("Month", value);
+
 }
 
-function createBudget(): void {
-  console.log("Create Budget");
+async function createBudget(): Promise<void> {
+  const { data, error } = await supabase.functions.invoke('create-budget');
+  console.log("Data", data);
+  console.log("Error", error);
 }
 </script>
