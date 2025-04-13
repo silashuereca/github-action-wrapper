@@ -42,11 +42,11 @@ function setDefaultDate(): void {
 }
 
 function selectMonth(value: Date): void {
-  console.log("Month", value);
+  state.selectedMonth = value;
 }
 
 async function createBudget(): Promise<void> {
-  const { data, error } = await supabase.functions.invoke("create-budget");
+  const { data, error } = await supabase.functions.invoke("create-budget", { body: { month: state.selectedMonth } });
   console.log("Data", data);
   console.log("Error", error);
 }
