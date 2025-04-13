@@ -2,9 +2,6 @@
   "[javascript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "[typescript]": {
-    "editor.defaultFormatter": "denoland.vscode-deno"
-  },
   "css.validate": false,
   "deno.enablePaths": [
     "supabase/functions"
@@ -41,6 +38,4 @@
   "files.insertFinalNewline": true,
   "less.validate": false,
   "scss.validate": false,
-  "vetur.validation.style": false,
-  "vetur.validation.template": false
 }

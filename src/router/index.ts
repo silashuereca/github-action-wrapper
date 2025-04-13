@@ -19,7 +19,7 @@ const routes = [
   {
     component: () => import("../pages/dashboard/UserSettings.vue"),
     meta: { layout: "dashboard" },
-    name: "user-settings",
+    name: "settings",
     path: "/settings",
   },
   {

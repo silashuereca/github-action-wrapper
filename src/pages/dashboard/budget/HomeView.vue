@@ -21,8 +21,6 @@
 import { Button, DatePicker } from "primevue";
 import { onMounted, reactive } from "vue";
 
-import { useAppStore } from "../../../store";
-
 type TState = {
   selectedMonth: Date;
 };
