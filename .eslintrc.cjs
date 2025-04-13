@@ -8,14 +8,6 @@ module.exports = {
     node: true,
   },
   extends: ["eslint:recommended", "plugin:prettier-vue/recommended", "plugin:vue/vue3-recommended"],
-  overrides: [
-    {
-      env: {
-        deno: true,
-      },
-      files: ["supabase/functions/**/*.ts"],
-    },
-  ],
   parserOptions: {
     ecmaFeatures: { legacyDecorators: true },
     ecmaVersion: 2015,
