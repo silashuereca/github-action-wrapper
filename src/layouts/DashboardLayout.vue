@@ -220,7 +220,7 @@
                   </router-link>
                 </li>
                 <li>
-                  <router-link :to="{ name: 'budget'}" class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white">
+                  <router-link :to="{ name: 'budget'}" class="group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold text-gray-400 hover:bg-gray-800 hover:text-white" :class="[activeRouteClass('budget-month')]">
                     <IconCurrencyDollar class="size-6 shrink-0" />
                     Budget
                   </router-link>

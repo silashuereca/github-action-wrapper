@@ -8,7 +8,7 @@
               <DatePicker
                 :model-value="state.selectedMonth"
                 view="month"
-                date-format="MM"
+                date-format="MM-yy"
                 @update:model-value="selectMonth"
               />
             </div>
