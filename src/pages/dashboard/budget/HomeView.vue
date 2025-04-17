@@ -14,7 +14,13 @@
             </div>
     
             <div v-show="!state.loading.budgetMonth && !state.budgetMonth" class="flex justify-end">
-              <Button label="Create Budget" type="button" severity="contrast" @click="createBudget()" />
+              <Button
+                label="Create Budget"
+                type="button"
+                severity="contrast"
+                :loading="state.loading.creatingBudget"
+                @click="createBudget()"
+              />
             </div>
           </div>
 
@@ -22,7 +28,7 @@
             <Panel :header="renderTypeHeader(key)">
               <ul>
                 <li v-for="budgetItem in item" :key="budgetItem.id" class="mb-3">
-                  <div class="flex justify-between w-full border-b border-gray-200 pb-2">
+                  <div class="flex justify-between w-full border-b border-blue-300 pb-2">
                     <p v-text="budgetItem.name" />
                     <p v-text="budgetItem.budgeted_amount" />
                   </div>
@@ -40,6 +46,7 @@
 import { DateTime } from "luxon";
 import { Button, Card, DatePicker, Panel } from "primevue";
 import { onMounted, reactive } from "vue";
+import { useRoute, useRouter } from "vue-router";
 
 import { supabase } from "../../../../supabase";
 import { BudgetItemApi } from "../../../api/budget-items/api";
@@ -53,15 +60,19 @@ type TState = {
   budgetMonth: TBudgetMonth | null;
   loading: {
     budgetMonth: boolean;
+    creatingBudget: boolean;
   };
   selectedMonth: Date;
 };
 
+const route = useRoute();
+const router = useRouter();
 const state: TState = reactive({
   budgetItems: null,
   budgetMonth: null,
   loading: {
     budgetMonth: true,
+    creatingBudget: false,
   },
   selectedMonth: null,
 });
@@ -81,20 +92,49 @@ async function setDefaultDate(): Promise<void> {
 
   try {
     const month = getMonthString(state.selectedMonth);
-    const result = await BudgetMonthApi.getBudgetMonth(month);
+    const result = await BudgetMonthApi.getBudgetMonth({ month, monthId: route.params.id as string });
     if (result) {
       state.budgetMonth = result;
-
       const budgetItems = await BudgetItemApi.getBudgetItems(state.budgetMonth.id);
       state.budgetItems = groupBudgetItems(budgetItems);
+      state.selectedMonth = DateTime.fromISO(result.month_start).toJSDate();
+      router.replace({
+        name: "budget-month",
+        params: { id: result.id },
+      });
     }
   } finally {
     state.loading.budgetMonth = false;
   }
 }
 
-function selectMonth(value: Date): void {
-  state.selectedMonth = value;
+async function selectMonth(value: Date): Promise<void> {
+  try {
+    state.loading.budgetMonth = true;
+    state.selectedMonth = value;
+    const selectedMonth = DateTime.fromJSDate(value).toFormat("yyyy-MM-dd");
+    const result = await BudgetMonthApi.getBudgetMonth({ month: selectedMonth });
+
+    if (result) {
+      state.budgetMonth = result;
+      const budgetItems = await BudgetItemApi.getBudgetItems(result.id);
+      state.budgetItems = groupBudgetItems(budgetItems);
+      router.replace({
+        name: "budget-month",
+        params: { id: result.id },
+      });
+      return;
+    }
+
+    state.budgetMonth = null;
+    state.budgetItems = null;
+    router.replace({
+      name: "budget",
+      params: { id: null },
+    });
+  } finally {
+    state.loading.budgetMonth = false;
+  }
 }
 
 function groupBudgetItems(items: TBudgetItem[]): Record<string, TBudgetItem[]> {
@@ -112,8 +152,30 @@ function groupBudgetItems(items: TBudgetItem[]): Record<string, TBudgetItem[]> {
 }
 
 async function createBudget(): Promise<void> {
-  const { data, error } = await supabase.functions.invoke("create-budget", { body: { month: state.selectedMonth } });
-  console.log("Data", data);
-  console.log("Error", error);
+  try {
+    state.loading.creatingBudget = true;
+    const { error } = await supabase.functions.invoke("create-budget", { body: { month: state.selectedMonth } });
+    if (error) {
+      console.error("Supabase error creating budget:", error);
+      return;
+    }
+
+    const month = getMonthString(state.selectedMonth);
+    const result = await BudgetMonthApi.getBudgetMonth({ month });
+
+    if (result) {
+      state.budgetMonth = result;
+      const budgetItems = await BudgetItemApi.getBudgetItems(result.id);
+      state.budgetItems = groupBudgetItems(budgetItems);
+      router.replace({
+        name: "budget-month",
+        params: { id: result.id },
+      });
+    }
+  } catch (error) {
+    console.error("Catch error creating budget:", error);
+  } finally {
+    state.loading.creatingBudget = false;
+  }
 }
 </script>
