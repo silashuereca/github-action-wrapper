@@ -1,6 +1,6 @@
 <template>
   <div class="w-full flex justify-center">
-    <Card class="w-full sm:max-w-2xl">
+    <Card class="w-full">
       <template #content>
         <section>
           <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
@@ -24,17 +24,19 @@
             </div>
           </div>
 
-          <div v-for="item, key in state.budgetItems" :key="key" class="mb-5">
-            <Panel :header="renderTypeHeader(key)">
-              <ul>
-                <li v-for="budgetItem in item" :key="budgetItem.id" class="mb-3">
-                  <div class="flex justify-between w-full border-b border-blue-300 pb-2">
-                    <p v-text="budgetItem.name" />
-                    <p v-text="budgetItem.budgeted_amount" />
-                  </div>
-                </li>
-              </ul>
-            </Panel>
+          <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div v-for="item, key in state.budgetItems" :key="key" class="mb-5">
+              <Panel :header="renderTypeHeader(key)">
+                <ul>
+                  <li v-for="budgetItem in item" :key="budgetItem.id" class="mb-3">
+                    <EditBudgetItem :budget-item="budgetItem" />
+                  </li>
+                  <li class="w-full">
+                    <CreateBudgetItem :month-id="state.budgetMonth.id" :category="key" @update:list="refreshBudgetItems()" />
+                  </li>
+                </ul>
+              </Panel>
+            </div>
           </div>
         </section>
       </template>
@@ -54,6 +56,8 @@ import { TBudgetItem } from "../../../api/budget-items/types";
 import { renderTypeHeader } from "../../../api/budget-items/utils";
 import { BudgetMonthApi } from "../../../api/budget-months/api";
 import { TBudgetMonth } from "../../../api/budget-months/types";
+import CreateBudgetItem from "../../../components/budget/CreateBudgetItem.vue";
+import EditBudgetItem from "../../../components/budget/EditBudgetItem.vue";
 
 type TState = {
   budgetItems: Record<TBudgetItem["type"], TBudgetItem[]> | null;
@@ -114,11 +118,9 @@ async function selectMonth(value: Date): Promise<void> {
     state.selectedMonth = value;
     const selectedMonth = DateTime.fromJSDate(value).toFormat("yyyy-MM-dd");
     const result = await BudgetMonthApi.getBudgetMonth({ month: selectedMonth });
-
     if (result) {
       state.budgetMonth = result;
-      const budgetItems = await BudgetItemApi.getBudgetItems(result.id);
-      state.budgetItems = groupBudgetItems(budgetItems);
+      fetchBudgetItems();
       router.replace({
         name: "budget-month",
         params: { id: result.id },
@@ -134,6 +136,17 @@ async function selectMonth(value: Date): Promise<void> {
     });
   } finally {
     state.loading.budgetMonth = false;
+  }
+}
+
+async function fetchBudgetItems(): Promise<void> {
+  const budgetItems = await BudgetItemApi.getBudgetItems(state.budgetMonth.id);
+  state.budgetItems = groupBudgetItems(budgetItems);
+}
+
+function refreshBudgetItems(): void {
+  if (state.budgetMonth) {
+    fetchBudgetItems();
   }
 }
 

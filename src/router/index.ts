@@ -11,13 +11,13 @@ const routes = [
   },
   // budget
   {
-    component: () => import("../pages/dashboard/budget/HomeView.vue"),
+    component: () => import("../pages/dashboard/budget/BudgetHome.vue"),
     meta: { layout: "dashboard" },
     name: "budget",
     path: "/budget",
   },
   {
-    component: () => import("../pages/dashboard/budget/HomeView.vue"),
+    component: () => import("../pages/dashboard/budget/BudgetHome.vue"),
     meta: { layout: "dashboard" },
     name: "budget-month",
     path: "/budget/:id",
