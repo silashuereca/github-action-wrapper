@@ -45,8 +45,7 @@ import { required } from "@vuelidate/validators";
 import { Button, InputNumber, InputText } from "primevue";
 import { computed, onMounted, PropType, reactive } from "vue";
 
-import { BudgetItemApi } from "../../api/budget-items/api";
-import { TBudgetItemCategory } from "../../api/budget-items/types";
+import { BudgetItemApi, TBudgetItemCategory } from "../../api/budget-items/api";
 
 const props = defineProps({
   amount: {

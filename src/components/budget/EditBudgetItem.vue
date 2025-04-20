@@ -1,6 +1,6 @@
 <template>
   <div class="w-full flex justify-between items-center">
-    <button v-show="!state.edit" type="button" class="flex justify-between w-full border-b border-blue-300 pb-2 hover:bg-gray-50" @click="viewExpenses()">
+    <button v-show="!state.edit" type="button" class="flex justify-between w-full border-b border-blue-300 pb-2 hover:bg-gray-50 cursor-pointer" @click="viewExpenses()">
       <p class="text-sm" v-text="budgetItem.name" />
       <p class="text-sm" v-text="formatCurrency(budgetItem.budgeted_amount)" />
     </button>
@@ -42,8 +42,9 @@
 <script lang="ts" setup>
 import { Button, Popover } from "primevue";
 import { PropType, reactive, ref } from "vue";
+import { useRouter } from "vue-router";
 
-import { TBudgetItem } from "../../api/budget-items/types";
+import { TBudgetItem } from "../../api/budget-items/api";
 import IconElipsisVertical from "../../icons/IconElipsisVertical.vue";
 import { formatCurrency } from "../../utils/common";
 import BudgetItemForm from "./BudgetItemForm.vue";
@@ -62,6 +63,7 @@ type TState = {
   edit: boolean;
 };
 
+const router = useRouter();
 const op = ref();
 const state: TState = reactive({
   edit: false,
@@ -74,11 +76,17 @@ const toggle = (event) => {
 function editBudgetItem(): void {
   toggle(false);
   state.edit = true;
-  console.log("Edit Budget Item", props.budgetItem.id);
 }
 
 function viewExpenses(): void {
-  console.log("View Expenses", props.budgetItem.id);
+  const budgetItem = props.budgetItem;
+  router.push({
+    name: "budget-item",
+    params: {
+      id: budgetItem.budget_month_id,
+      itemId: budgetItem.id,
+    },
+  });
 }
 
 function deleteBudgetItem(): void {

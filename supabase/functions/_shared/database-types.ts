@@ -1,7 +1,33 @@
 /* eslint-disable no-unused-vars */
+
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Database = {
+  graphql_public: {
+    CompositeTypes: {
+      [_ in never]: never;
+    };
+    Enums: {
+      [_ in never]: never;
+    };
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json;
+          operationName?: string;
+          query?: string;
+          variables?: Json;
+        };
+        Returns: Json;
+      };
+    };
+    Tables: {
+      [_ in never]: never;
+    };
+    Views: {
+      [_ in never]: never;
+    };
+  };
   public: {
     CompositeTypes: {
       [_ in never]: never;
@@ -31,6 +57,7 @@ export type Database = {
           created_at?: string | null;
           date?: string;
           id?: string;
+          name: string;
         };
         Relationships: [
           {
@@ -47,6 +74,7 @@ export type Database = {
           created_at: string | null;
           date: string;
           id: string;
+          name: string;
         };
         Update: {
           amount?: number;
@@ -54,6 +82,7 @@ export type Database = {
           created_at?: string | null;
           date?: string;
           id?: string;
+          name?: string;
         };
       };
       budget_items: {
@@ -239,6 +268,9 @@ export type CompositeTypes<
     : never;
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {
       budget_category_type: [

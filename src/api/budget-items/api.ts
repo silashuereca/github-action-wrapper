@@ -1,7 +1,21 @@
 import { supabase } from "../../../supabase";
-import { TBudgetItem, TBudgetItemCategory } from "./types";
+import { Database } from "../../../supabase/functions/_shared/database-types";
+
+export type TBudgetItem = Database["public"]["Tables"]["budget_items"]["Row"];
+export type TBudgetItemCategory = Database["public"]["Tables"]["budget_items"]["Row"]["type"];
 
 export class BudgetItemApi {
+  static async getBudgetItem(variables: { id: string }): Promise<TBudgetItem> {
+    const { id } = variables;
+    const { data, error } = await supabase.from("budget_items").select("*").eq("id", id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data[0];
+  }
+
   static async getBudgetItems(budgetMonthId: string): Promise<TBudgetItem[]> {
     const { data, error } = await supabase
       .from("budget_items")

@@ -2,7 +2,7 @@ import { createClient } from "npm:@supabase/supabase-js";
 import { DateTime } from "npm:luxon";
 
 import { corsHeaders } from "../_shared/cores.ts";
-import { Database } from "../_shared/types.ts";
+import { Database } from "../_shared/database-types.ts";
 
 // eslint-disable-next-line no-undef
 Deno.serve(async (req: Request) => {
