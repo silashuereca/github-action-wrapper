@@ -24,15 +24,15 @@
             </div>
           </div>
 
-          <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div v-for="item, key in state.budgetItems" :key="key" class="mb-5">
-              <Panel :header="renderTypeHeader(key)">
+          <div v-if="state.budgetItems.length" class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div v-for="group in state.budgetItems" :key="group.type" class="w-full">
+              <Panel :header="renderTypeHeader(group.type)">
                 <ul>
-                  <li v-for="budgetItem in item" :key="budgetItem.id" class="mb-3">
+                  <li v-for="budgetItem in group.items" :key="budgetItem.id" class="mb-3">
                     <EditBudgetItem :budget-item="budgetItem" />
                   </li>
                   <li class="w-full">
-                    <CreateBudgetItem :month-id="state.budgetMonth.id" :category="key" @update:list="refreshBudgetItems()" />
+                    <CreateBudgetItem :month-id="state.budgetMonth.id" :category="group.type" @update:list="refreshBudgetItems()" />
                   </li>
                 </ul>
               </Panel>
@@ -46,7 +46,8 @@
 
 <script lang="ts" setup>
 import { DateTime } from "luxon";
-import { Button, Card, DatePicker, Panel } from "primevue";
+import { Panel } from "primevue";
+import { Button, Card, DatePicker } from "primevue";
 import { onMounted, reactive } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
@@ -59,8 +60,13 @@ import { TBudgetMonth } from "../../../api/budget-months/types";
 import CreateBudgetItem from "../../../components/budget/CreateBudgetItem.vue";
 import EditBudgetItem from "../../../components/budget/EditBudgetItem.vue";
 
+type TBudgetGroup = {
+  items: TBudgetItem[];
+  type: TBudgetItem["type"];
+};
+
 type TState = {
-  budgetItems: Record<TBudgetItem["type"], TBudgetItem[]> | null;
+  budgetItems: TBudgetGroup[];
   budgetMonth: TBudgetMonth | null;
   loading: {
     budgetMonth: boolean;
@@ -72,7 +78,7 @@ type TState = {
 const route = useRoute();
 const router = useRouter();
 const state: TState = reactive({
-  budgetItems: null,
+  budgetItems: [],
   budgetMonth: null,
   loading: {
     budgetMonth: true,
@@ -99,8 +105,8 @@ async function setDefaultDate(): Promise<void> {
     const result = await BudgetMonthApi.getBudgetMonth({ month, monthId: route.params.id as string });
     if (result) {
       state.budgetMonth = result;
-      const budgetItems = await BudgetItemApi.getBudgetItems(state.budgetMonth.id);
-      state.budgetItems = groupBudgetItems(budgetItems);
+      const items = await BudgetItemApi.getBudgetItems(state.budgetMonth.id);
+      state.budgetItems = groupBudgetItems(items);
       state.selectedMonth = DateTime.fromISO(result.month_start).toJSDate();
       router.replace({
         name: "budget-month",
@@ -139,29 +145,48 @@ async function selectMonth(value: Date): Promise<void> {
   }
 }
 
+function groupBudgetItems(items: TBudgetItem[]): { items: TBudgetItem[]; type: TBudgetItem["type"] }[] {
+  const typeOrder: TBudgetItem["type"][] = [
+    "income",
+    "savings",
+    "housing",
+    "transportation",
+    "food",
+    "personal",
+    "lifestyle",
+    "health",
+    "insurance",
+    "debt",
+  ];
+
+  const groupMap = new Map<TBudgetItem["type"], TBudgetItem[]>();
+
+  items.forEach((item) => {
+    if (!groupMap.has(item.type)) {
+      groupMap.set(item.type, []);
+    }
+    groupMap.get(item.type)!.push(item);
+  });
+
+  const groups = typeOrder
+    .filter((type) => groupMap.has(type))
+    .map((type) => ({
+      items: groupMap.get(type)!,
+      type,
+    }));
+
+  return groups;
+}
+
 async function fetchBudgetItems(): Promise<void> {
-  const budgetItems = await BudgetItemApi.getBudgetItems(state.budgetMonth.id);
-  state.budgetItems = groupBudgetItems(budgetItems);
+  const result = await BudgetItemApi.getBudgetItems(state.budgetMonth.id);
+  state.budgetItems = groupBudgetItems(result);
 }
 
 function refreshBudgetItems(): void {
   if (state.budgetMonth) {
     fetchBudgetItems();
   }
-}
-
-function groupBudgetItems(items: TBudgetItem[]): Record<string, TBudgetItem[]> {
-  return items.reduce(
-    (acc, item) => {
-      const key = item.type;
-      if (!acc[key]) {
-        acc[key] = [];
-      }
-      acc[key].push(item);
-      return acc;
-    },
-    {} as Record<string, TBudgetItem[]>,
-  );
 }
 
 async function createBudget(): Promise<void> {
@@ -178,8 +203,8 @@ async function createBudget(): Promise<void> {
 
     if (result) {
       state.budgetMonth = result;
-      const budgetItems = await BudgetItemApi.getBudgetItems(result.id);
-      state.budgetItems = groupBudgetItems(budgetItems);
+      const items = await BudgetItemApi.getBudgetItems(result.id);
+      state.budgetItems = groupBudgetItems(items);
       router.replace({
         name: "budget-month",
         params: { id: result.id },
