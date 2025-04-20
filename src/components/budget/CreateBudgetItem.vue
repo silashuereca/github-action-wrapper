@@ -23,7 +23,7 @@
 import { Button } from "primevue";
 import { PropType, reactive } from "vue";
 
-import { TBudgetItemCategory } from "../../api/budget-items/types";
+import { TBudgetItemCategory } from "../../api/budget-items/api";
 import BudgetItemForm from "./BudgetItemForm.vue";
 
 defineProps({

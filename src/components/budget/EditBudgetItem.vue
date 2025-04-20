@@ -44,7 +44,7 @@ import { Button, Popover } from "primevue";
 import { PropType, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 
-import { TBudgetItem } from "../../api/budget-items/types";
+import { TBudgetItem } from "../../api/budget-items/api";
 import IconElipsisVertical from "../../icons/IconElipsisVertical.vue";
 import { formatCurrency } from "../../utils/common";
 import BudgetItemForm from "./BudgetItemForm.vue";

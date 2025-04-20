@@ -1,4 +1,4 @@
-import { TBudgetItem } from "./types";
+import { TBudgetItem } from "./api";
 
 export function renderTypeHeader(type: TBudgetItem["type"]): string {
   switch (type) {

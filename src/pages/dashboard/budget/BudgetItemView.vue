@@ -40,8 +40,7 @@ import { Button, Card, Dialog } from "primevue";
 import { onMounted, reactive } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
-import { BudgetItemApi } from "../../../api/budget-items/api";
-import { TBudgetItem } from "../../../api/budget-items/types";
+import { BudgetItemApi, TBudgetItem } from "../../../api/budget-items/api";
 import { renderTypeHeader } from "../../../api/budget-items/utils";
 import IconArrowLeft from "../../../icons/IconArrowLeft.vue";
 import { formatCurrency } from "../../../utils/common";

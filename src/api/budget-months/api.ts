@@ -1,5 +1,7 @@
 import { supabase } from "../../../supabase";
-import { TBudgetMonth } from "./types";
+import { Database } from "../../../supabase/functions/_shared/database-types";
+
+export type TBudgetMonth = Database["public"]["Tables"]["budget_months"]["Row"];
 
 export class BudgetMonthApi {
   static async getBudgetMonth(variables: { month?: string; monthId?: string }): Promise<TBudgetMonth | null> {

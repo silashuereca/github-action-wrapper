@@ -1,5 +1,9 @@
 import { supabase } from "../../../supabase";
-import { TBudgetExpenseInsert, TBudgetExpenseRow, TBudgetExpenseUpdate } from "./types";
+import { Database } from "../../../supabase/functions/_shared/database-types";
+
+export type TBudgetExpenseRow = Database["public"]["Tables"]["budget_expenses"]["Row"];
+export type TBudgetExpenseInsert = Database["public"]["Tables"]["budget_expenses"]["Insert"];
+export type TBudgetExpenseUpdate = Database["public"]["Tables"]["budget_expenses"]["Update"];
 
 export class BudgetExpenseApi {
   static async getBudgetExpenses(variables: { id: string }): Promise<TBudgetExpenseRow[]> {
@@ -13,11 +17,16 @@ export class BudgetExpenseApi {
     return data;
   }
 
-  static async createBudgetExpense(variables: TBudgetExpenseInsert): Promise<{ success: boolean }> {
-    const { amount, budget_item_id } = variables;
+  static async createBudgetExpense(variables: {
+    amount: number;
+    budget_item_id: string;
+    name: string;
+  }): Promise<{ success: boolean }> {
+    const { amount, budget_item_id, name } = variables;
     const { error } = await supabase.from("budget_expenses").insert({
       amount,
       budget_item_id,
+      name,
     });
 
     if (error) {
