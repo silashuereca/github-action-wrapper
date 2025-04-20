@@ -106,7 +106,12 @@ Deno.serve(async (req: Request) => {
         await supabaseClient.from("budget_items").insert([
           {
             ...budgetItem,
-            name: "Income",
+            name: "Paycheck 1",
+            type: "income",
+          },
+          {
+            ...budgetItem,
+            name: "Paycheck 2",
             type: "income",
           },
           {
@@ -116,42 +121,42 @@ Deno.serve(async (req: Request) => {
           },
           {
             ...budgetItem,
-            name: "Housing",
+            name: "Mortgage/Rent",
             type: "housing",
           },
           {
             ...budgetItem,
-            name: "Transportation",
+            name: "Gas",
             type: "transportation",
           },
           {
             ...budgetItem,
-            name: "Food",
+            name: "Groceries",
             type: "food",
           },
           {
             ...budgetItem,
-            name: "Personal",
+            name: "Cell Phone",
             type: "personal",
           },
           {
             ...budgetItem,
-            name: "Lifestyle",
+            name: "Gym Membership",
             type: "lifestyle",
           },
           {
             ...budgetItem,
-            name: "Health",
+            name: "Doctor Visit",
             type: "health",
           },
           {
             ...budgetItem,
-            name: "Insurance",
+            name: "Car Insurance",
             type: "insurance",
           },
           {
             ...budgetItem,
-            name: "Debt",
+            name: "Credit Card",
             type: "debt",
           },
         ]);
