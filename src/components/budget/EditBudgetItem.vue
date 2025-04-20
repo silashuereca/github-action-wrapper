@@ -2,7 +2,7 @@
   <div class="w-full flex justify-between items-center">
     <button v-show="!state.edit" type="button" class="flex justify-between w-full border-b border-blue-300 pb-2 hover:bg-gray-50" @click="viewExpenses()">
       <p class="text-sm" v-text="budgetItem.name" />
-      <p class="text-sm" v-text="budgetItem.budgeted_amount" />
+      <p class="text-sm" v-text="formatCurrency(budgetItem.budgeted_amount)" />
     </button>
     <button v-show="!state.edit" type="button" @click="toggle">
       <IconElipsisVertical class="size-6 text-gray-500 ml-4" />
@@ -45,6 +45,7 @@ import { PropType, reactive, ref } from "vue";
 
 import { TBudgetItem } from "../../api/budget-items/types";
 import IconElipsisVertical from "../../icons/IconElipsisVertical.vue";
+import { formatCurrency } from "../../utils/common";
 import BudgetItemForm from "./BudgetItemForm.vue";
 const props = defineProps({
   budgetItem: {
