@@ -22,6 +22,12 @@ const routes = [
     name: "budget-month",
     path: "/budget/:id",
   },
+  {
+    component: () => import("../pages/dashboard/budget/BudgetItemView.vue"),
+    meta: { layout: "dashboard" },
+    name: "budget-item",
+    path: "/budget/:id/budget-item/:itemId",
+  },
 
   {
     component: () => import("../pages/dashboard/UserSettings.vue"),
