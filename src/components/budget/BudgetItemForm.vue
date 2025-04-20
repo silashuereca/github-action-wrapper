@@ -20,7 +20,7 @@
       />
       <div class="flex justify-between sm:justify-start items-center">
         <Button
-          label="Create"
+          :label="props.edit ? 'Update' : 'Create'"
           type="submit"
           severity="success"
           size="small"
@@ -58,7 +58,7 @@ const props = defineProps({
     type: String,
   },
   category: {
-    required: true,
+    default: null,
     type: String as PropType<TBudgetItemCategory>,
   },
   edit: {
@@ -66,7 +66,7 @@ const props = defineProps({
     type: Boolean,
   },
   monthId: {
-    required: true,
+    default: null,
     type: String,
   },
   name: {
