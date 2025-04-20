@@ -37,12 +37,12 @@ export class BudgetExpenseApi {
   }
 
   static async updateBudgetExpense(variables: TBudgetExpenseUpdate): Promise<{ success: boolean }> {
-    const { amount, date, id } = variables;
+    const { amount, id, name } = variables;
     const { error } = await supabase
       .from("budget_expenses")
       .update({
         amount,
-        date,
+        name,
       })
       .eq("id", id);
 
