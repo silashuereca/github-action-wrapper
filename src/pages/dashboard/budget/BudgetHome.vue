@@ -1,46 +1,42 @@
 <template>
   <div class="w-full flex justify-center">
-    <Card class="w-full">
-      <template #content>
-        <section>
-          <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-            <div>
-              <DatePicker
-                :model-value="state.selectedMonth"
-                view="month"
-                date-format="MM-yy"
-                @update:model-value="selectMonth"
-              />
-            </div>
+    <section class="w-full">
+      <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+        <div>
+          <DatePicker
+            :model-value="state.selectedMonth"
+            view="month"
+            date-format="MM-yy"
+            @update:model-value="selectMonth"
+          />
+        </div>
     
-            <div v-show="!state.loading.budgetMonth && !state.budgetMonth" class="flex justify-end">
-              <Button
-                label="Create Budget"
-                type="button"
-                severity="contrast"
-                :loading="state.loading.creatingBudget"
-                @click="createBudget()"
-              />
-            </div>
-          </div>
+        <div v-show="!state.loading.budgetMonth && !state.budgetMonth" class="flex justify-end">
+          <Button
+            label="Create Budget"
+            type="button"
+            severity="contrast"
+            :loading="state.loading.creatingBudget"
+            @click="createBudget()"
+          />
+        </div>
+      </div>
 
-          <div v-if="state.budgetItems.length" class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div v-for="group in state.budgetItems" :key="group.type" class="w-full">
-              <Panel :header="renderTypeHeader(group.type)">
-                <ul>
-                  <li v-for="budgetItem in group.items" :key="budgetItem.id" class="mb-3">
-                    <EditBudgetItem :budget-item="budgetItem" :can-delete="group.items.length > 1" @update:list="refreshBudgetItems()" />
-                  </li>
-                  <li class="w-full">
-                    <CreateBudgetItem :month-id="state.budgetMonth.id" :category="group.type" @update:list="refreshBudgetItems()" />
-                  </li>
-                </ul>
-              </Panel>
-            </div>
-          </div>
-        </section>
-      </template>
-    </Card>
+      <div v-if="state.budgetItems.length" class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div v-for="group in state.budgetItems" :key="group.type" class="w-full">
+          <Panel :header="renderTypeHeader(group.type)">
+            <ul>
+              <li v-for="budgetItem in group.items" :key="budgetItem.id" class="mb-3">
+                <EditBudgetItem :budget-item="budgetItem" :can-delete="group.items.length > 1" @update:list="refreshBudgetItems()" />
+              </li>
+              <li class="w-full">
+                <CreateBudgetItem :month-id="state.budgetMonth.id" :category="group.type" @update:list="refreshBudgetItems()" />
+              </li>
+            </ul>
+          </Panel>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -133,7 +129,7 @@ async function selectMonth(value: Date): Promise<void> {
     }
 
     state.budgetMonth = null;
-    state.budgetItems = null;
+    state.budgetItems = [];
     router.replace({
       name: "budget",
       params: { id: null },
