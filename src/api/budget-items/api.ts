@@ -71,4 +71,15 @@ export class BudgetItemApi {
 
     return { success: true };
   }
+
+  static async deleteBudgetItem(variables: { id: string }): Promise<{ success: boolean }> {
+    const { id } = variables;
+    const { error } = await supabase.from("budget_items").delete().eq("id", id);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return { success: true };
+  }
 }

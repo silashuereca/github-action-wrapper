@@ -29,7 +29,7 @@
               <Panel :header="renderTypeHeader(group.type)">
                 <ul>
                   <li v-for="budgetItem in group.items" :key="budgetItem.id" class="mb-3">
-                    <EditBudgetItem :budget-item="budgetItem" @update:list="refreshBudgetItems()" />
+                    <EditBudgetItem :budget-item="budgetItem" :can-delete="group.items.length > 1" @update:list="refreshBudgetItems()" />
                   </li>
                   <li class="w-full">
                     <CreateBudgetItem :month-id="state.budgetMonth.id" :category="group.type" @update:list="refreshBudgetItems()" />
