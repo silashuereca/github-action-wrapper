@@ -43,7 +43,7 @@
 <script lang="ts" setup>
 import { DateTime } from "luxon";
 import { Panel } from "primevue";
-import { Button, Card, DatePicker } from "primevue";
+import { Button, DatePicker } from "primevue";
 import { onMounted, reactive } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
