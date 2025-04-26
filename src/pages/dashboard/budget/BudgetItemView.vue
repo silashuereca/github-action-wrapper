@@ -18,7 +18,6 @@
       <section v-show="state.expenses.length" class="mt-5">
         <DataTable :value="state.expenses">
           <Column field="name" header="Name" />
-          <Column field="date" header="Date" />
           <Column field="amount" header="Amount">
             <template #body="slotProps">
               <div class="flex justify-between items-center">
@@ -33,7 +32,7 @@
         </DataTable>
       </section>
 
-      <Popover ref="op" @hide="close()">
+      <Popover ref="op">
         <div class="flex flex-col">
           <Button
             type="button"
@@ -77,13 +76,13 @@
             placeholder="Transaction Name"
             :invalid="v$.state.form.name.$errors.length > 0"
           />
-          <InputNumber
-            v-model="state.form.amount"
-            label="Amount"
-            mode="currency"
-            currency="USD"
-            locale="en-US"
+          <InputText
+            inputmode="numeric"
+            :value="formattedAmount"
             :invalid="v$.state.form.amount.$errors.length > 0"
+            @input="handleInput"
+            @keydown="handleKeydown"
+            @blur="handleBlur"
           />
           <div>
             <Button :label="state.form.id ? 'Update' : 'Add'" type="submit" size="small" :loading="state.loading.creatingOrEditingTransaction" />
@@ -105,24 +104,14 @@
 <script lang="ts" setup>
 import { useVuelidate } from "@vuelidate/core";
 import { required } from "@vuelidate/validators";
-import {
-  Button,
-  Card,
-  Column,
-  ConfirmDialog,
-  DataTable,
-  Dialog,
-  InputNumber,
-  InputText,
-  Popover,
-  useConfirm,
-} from "primevue";
+import { Button, Card, Column, ConfirmDialog, DataTable, Dialog, InputText, Popover, useConfirm } from "primevue";
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { BudgetExpenseApi, TBudgetExpenseRow } from "../../../api/budget-expenses/api";
 import { BudgetItemApi, TBudgetItem } from "../../../api/budget-items/api";
 import { renderTypeHeader } from "../../../api/budget-items/utils";
+import { useMoneyInput } from "../../../hooks/money-input";
 import IconArrowLeft from "../../../icons/IconArrowLeft.vue";
 import IconElipsisVertical from "../../../icons/IconElipsisVertical.vue";
 import { formatCurrency } from "../../../utils/common";
@@ -132,7 +121,7 @@ type TState = {
   budgetItem: TBudgetItem | null;
   expenses: TBudgetExpenseRow[];
   form: {
-    amount: number;
+    amount: string;
     id?: string;
     name: string;
   };
@@ -155,7 +144,7 @@ const state: TState = reactive({
   budgetItem: null,
   expenses: [],
   form: {
-    amount: 0,
+    amount: "",
     id: null,
     name: "",
   },
@@ -165,6 +154,11 @@ const state: TState = reactive({
     deletingTransaction: false,
   },
 });
+
+const { formatAmountOnMount, formatAmountToSave, formattedAmount, handleBlur, handleInput, handleKeydown } =
+  useMoneyInput({
+    form: state.form,
+  });
 
 onMounted(() => {
   state.loading.budgetItem = true;
@@ -192,17 +186,18 @@ async function createOrEditTransaction(): Promise<void> {
   const valid = await v$.value.$validate();
   if (!valid) return;
   const { amount, id, name } = state.form;
+  const inputAmount = formatAmountToSave(amount);
   try {
     state.loading.creatingOrEditingTransaction = true;
     if (id) {
       await BudgetExpenseApi.updateBudgetExpense({
-        amount,
+        amount: inputAmount,
         id,
         name,
       });
     } else {
       await BudgetExpenseApi.createBudgetExpense({
-        amount,
+        amount: inputAmount,
         budget_item_id: budgetItemId,
         name,
       });
@@ -233,7 +228,7 @@ function goBackToBudgetMonth(): void {
 }
 
 function close(): void {
-  state.form.amount = 0;
+  state.form.amount = "";
   state.form.name = "";
   state.loading.creatingOrEditingTransaction = false;
   v$.value.$reset();
@@ -242,7 +237,7 @@ function close(): void {
 
 function addOrEditTransaction(): void {
   state.addOrEditTransaction = true;
-  state.form.amount = 0;
+  state.form.amount = "";
   state.form.name = "";
   state.form.id = null;
 }
@@ -283,7 +278,7 @@ function deleteTransaction(): void {
 }
 
 const toggle = (event: Event, transaction: TBudgetExpenseRow) => {
-  state.form.amount = transaction.amount;
+  state.form.amount = formatAmountOnMount(transaction.amount);
   state.form.name = transaction.name;
   state.form.id = transaction.id;
   op.value.toggle(event);
