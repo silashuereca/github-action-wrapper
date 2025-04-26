@@ -21,7 +21,9 @@
           />
         </div>
       </div>
-
+      <div v-show="state.loading.budgetMonth" class="flex justify-center items-center">
+        <ProgressSpinner />
+      </div>
       <div v-if="state.budgetItems.length" class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div v-for="group in state.budgetItems" :key="group.type" class="w-full">
           <Panel :header="renderTypeHeader(group.type)">
@@ -42,7 +44,7 @@
 
 <script lang="ts" setup>
 import { DateTime } from "luxon";
-import { Panel } from "primevue";
+import { Panel, ProgressSpinner } from "primevue";
 import { Button, DatePicker } from "primevue";
 import { onMounted, reactive } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -93,7 +95,7 @@ async function setDefaultDate(): Promise<void> {
   const now = new Date();
   const firstOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   state.selectedMonth = firstOfMonth;
-
+  state.loading.budgetMonth = true;
   try {
     const month = getMonthString(state.selectedMonth);
     const result = await BudgetMonthApi.getBudgetMonth({ month, monthId: route.params.id as string });
