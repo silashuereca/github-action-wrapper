@@ -1,3 +1,5 @@
+drop trigger if exists on_auth_user_created on auth.users;
+
 drop function if exists "public"."handle_new_user"();
 
 alter table "public"."budget_expenses" add column "budget_month_id" uuid not null;
