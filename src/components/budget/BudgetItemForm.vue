@@ -9,14 +9,12 @@
         autofocus
         fluid
       />
-      <InputNumber
-        v-model="state.form.amount"
-        input-id="currency-us"
-        mode="currency"
-        currency="USD"
-        locale="en-US"
+      <InputText
+        :value="formattedAmount"
         :invalid="v$.state.form.amount.$errors.length > 0"
-        fluid
+        @input="handleInput"
+        @keydown="handleKeydown"
+        @blur="handleBlur"
       />
       <div class="flex justify-between sm:justify-start items-center">
         <Button
@@ -42,7 +40,7 @@
 <script lang="ts" setup>
 import { useVuelidate } from "@vuelidate/core";
 import { required } from "@vuelidate/validators";
-import { Button, InputNumber, InputText } from "primevue";
+import { Button, InputText } from "primevue";
 import { computed, onMounted, PropType, reactive } from "vue";
 
 import { BudgetItemApi, TBudgetItemCategory } from "../../api/budget-items/api";
@@ -81,7 +79,7 @@ const emit = defineEmits<{
 
 type TState = {
   form: {
-    amount: number;
+    amount: string;
     name: string;
   };
   loading: {
@@ -92,7 +90,7 @@ type TState = {
 const state: TState = reactive({
   addItem: false,
   form: {
-    amount: 0,
+    amount: "",
     name: "",
   },
   loading: {
@@ -102,7 +100,7 @@ const state: TState = reactive({
 
 onMounted(() => {
   if (props.edit) {
-    state.form.amount = props.amount;
+    state.form.amount = String(Math.round(Number(props.amount) * 100));
     state.form.name = props.name;
   }
 });
@@ -121,11 +119,36 @@ const rules = computed(() => {
 const v$: any = useVuelidate(rules, { state });
 
 function cancel(): void {
-  state.form.amount = 0;
+  state.form.amount = "";
   state.form.name = "";
   state.loading.createOrEditBudgetItem = false;
   v$.value.$reset();
   emit("update:cancel");
+}
+
+const formattedAmount = computed(() => {
+  const value = state.form.amount.padStart(3, "0");
+  const dollars = value.slice(0, -2);
+  const cents = value.slice(-2);
+  return `$${parseInt(dollars, 10).toLocaleString()}.${cents}`;
+});
+
+function handleInput(event) {
+  const digitsOnly = event.target.value.replace(/\D/g, "");
+  state.form.amount = digitsOnly;
+}
+
+function handleKeydown(event) {
+  // Prevent entering non-numeric characters manually
+  if (event.key.length === 1 && !/\d/.test(event.key)) {
+    event.preventDefault();
+  }
+}
+
+function handleBlur() {
+  if (state.form.amount === "") {
+    state.form.amount = "0";
+  }
 }
 
 async function createOrEditBudgetItem(): Promise<void> {
@@ -135,16 +158,18 @@ async function createOrEditBudgetItem(): Promise<void> {
   try {
     const monthId = props.monthId;
     const { amount, name } = state.form;
+    const inputAmount = parseInt(amount) / 100;
+
     state.loading.createOrEditBudgetItem = true;
     if (props.edit) {
       await BudgetItemApi.updateBudgetItem({
-        amount,
+        amount: inputAmount,
         id: props.budgetItemId,
         name,
       });
     } else {
       await BudgetItemApi.createBudgetItem({
-        amount,
+        amount: inputAmount,
         category: props.category,
         monthId,
         name,
@@ -154,7 +179,7 @@ async function createOrEditBudgetItem(): Promise<void> {
     emit("update:form");
   } finally {
     state.loading.createOrEditBudgetItem = false;
-    state.form.amount = 0;
+    state.form.amount = "0";
     state.form.name = "";
   }
 }
