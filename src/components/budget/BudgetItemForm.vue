@@ -10,6 +10,7 @@
         fluid
       />
       <InputText
+        inputmode="numeric"
         :value="formattedAmount"
         :invalid="v$.state.form.amount.$errors.length > 0"
         @input="handleInput"
@@ -41,9 +42,10 @@
 import { useVuelidate } from "@vuelidate/core";
 import { required } from "@vuelidate/validators";
 import { Button, InputText } from "primevue";
-import { computed, onMounted, PropType, reactive } from "vue";
+import { computed, PropType, reactive } from "vue";
 
 import { BudgetItemApi, TBudgetItemCategory } from "../../api/budget-items/api";
+import { useMoneyInput } from "../../hooks/money-input";
 
 const props = defineProps({
   amount: {
@@ -97,12 +99,11 @@ const state: TState = reactive({
     createOrEditBudgetItem: false,
   },
 });
-
-onMounted(() => {
-  if (props.edit) {
-    state.form.amount = String(Math.round(Number(props.amount) * 100));
-    state.form.name = props.name;
-  }
+const { formatAmountToSave, formattedAmount, handleBlur, handleInput, handleKeydown } = useMoneyInput({
+  amountProp: props.amount,
+  edit: props.edit,
+  form: state.form,
+  nameProp: props.name,
 });
 
 const rules = computed(() => {
@@ -126,31 +127,6 @@ function cancel(): void {
   emit("update:cancel");
 }
 
-const formattedAmount = computed(() => {
-  const value = state.form.amount.padStart(3, "0");
-  const dollars = value.slice(0, -2);
-  const cents = value.slice(-2);
-  return `$${parseInt(dollars, 10).toLocaleString()}.${cents}`;
-});
-
-function handleInput(event) {
-  const digitsOnly = event.target.value.replace(/\D/g, "");
-  state.form.amount = digitsOnly;
-}
-
-function handleKeydown(event) {
-  // Prevent entering non-numeric characters manually
-  if (event.key.length === 1 && !/\d/.test(event.key)) {
-    event.preventDefault();
-  }
-}
-
-function handleBlur() {
-  if (state.form.amount === "") {
-    state.form.amount = "0";
-  }
-}
-
 async function createOrEditBudgetItem(): Promise<void> {
   const valid = await v$.value.$validate();
   if (!valid) return;
@@ -158,7 +134,7 @@ async function createOrEditBudgetItem(): Promise<void> {
   try {
     const monthId = props.monthId;
     const { amount, name } = state.form;
-    const inputAmount = parseInt(amount) / 100;
+    const inputAmount = formatAmountToSave(amount);
 
     state.loading.createOrEditBudgetItem = true;
     if (props.edit) {
