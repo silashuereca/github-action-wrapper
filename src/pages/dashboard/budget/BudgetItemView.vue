@@ -1,110 +1,126 @@
 <template>
-  <Card class=" max-w-2xl mx-auto">
-    <template #header>
-      <div class="p-3">
-        <button type="button" class="flex items-center cursor-pointer" @click="goBackToBudgetMonth()">
-          <IconArrowLeft class="size-3 text-gray-500" />
-          <h2 class="font-bold ml-2" v-text="renderTypeHeader(state.budgetItem?.type)" />
-        </button>
-      </div>
-    </template>
-    <template #content>
-      <div class="flex items-center justify-between">
-        <h2 class="text-2xl font-bold ml-2" v-text="state.budgetItem?.name" />
-      
-        <h2 class="text-2xl font-bold ml-2" v-text="formatCurrency(state.budgetItem?.budgeted_amount)" />
-      </div>
-
-      <section v-show="state.expenses.length" class="mt-5">
-        <DataTable :value="state.expenses">
-          <Column field="name" header="Name" />
-          <Column field="amount" header="Amount">
-            <template #body="slotProps">
-              <div class="flex justify-between items-center">
-                <p v-text="formatCurrency(slotProps.data.amount)" />
-                <button type="button" @click="toggle($event, slotProps.data)">
-                  <IconElipsisVertical class="size-6 text-gray-500 ml-4" />
-                </button>
-              </div>
-              <ConfirmDialog :group="slotProps.data.id" />
-            </template>
-          </Column>
-        </DataTable>
-      </section>
-
-      <Popover ref="op">
-        <div class="flex flex-col">
-          <Button
-            type="button"
-            size="small"
-            severity="secondary"
-            label="Edit"
-            @click="editTransaction()"
-          />
-          <Button
-            class="mt-4"
-            type="button"
-            size="small"
-            severity="danger"
-            label="Delete"
-            @click="deleteTransaction()"
-          />
+  <div>
+    <div v-show="state.loading.budgetItem" class="flex justify-center items-center">
+      <ProgressSpinner />
+    </div>
+    <Card v-show="!state.loading.budgetItem" class=" max-w-2xl mx-auto">
+      <template #header>
+        <div class="p-3">
+          <button type="button" class="flex items-center cursor-pointer" @click="goBackToBudgetMonth()">
+            <IconArrowLeft class="size-3 text-gray-500" />
+            <h2 class="font-bold ml-2" v-text="renderTypeHeader(state.budgetItem?.type)" />
+          </button>
         </div>
-      </Popover>
+      </template>
+      <template #content>
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-bold ml-2" v-text="state.budgetItem?.name" />
+      
+          <h2 class="text-2xl font-bold ml-2" v-text="formatCurrency(state.budgetItem?.budgeted_amount)" />
+        </div>
 
+        <section v-show="state.expenses.length" class="mt-5">
+          <DataTable :value="state.expenses">
+            <Column field="name" header="Name" />
+            <Column field="amount" header="Amount">
+              <template #body="slotProps">
+                <div class="flex justify-between items-center">
+                  <p v-text="formatCurrency(slotProps.data.amount)" />
+                  <button type="button" @click="toggle($event, slotProps.data)">
+                    <IconElipsisVertical class="size-6 text-gray-500 ml-4" />
+                  </button>
+                </div>
+                <ConfirmDialog :group="slotProps.data.id" />
+              </template>
+            </Column>
+          </DataTable>
+        </section>
 
-      <Button
-        class="mt-5"
-        type="button"
-        label="Add Transaction"
-        size="small"
-        severity="secondary"
-        @click="addOrEditTransaction()"
-      />
-
-      <Dialog
-        v-model:visible="state.addOrEditTransaction"
-        modal
-        header="Add Transaction"
-        class="w-full mx-4 sm:mx-0 sm:w-96"
-        :closable="false"
-      >
-        <form class="flex flex-col gap-3" @submit.prevent="createOrEditTransaction()">
-          <InputText
-            v-model="state.form.name"
-            label="Name"
-            placeholder="Transaction Name"
-            :invalid="v$.state.form.name.$errors.length > 0"
-          />
-          <InputText
-            inputmode="numeric"
-            :value="formattedAmount"
-            :invalid="v$.state.form.amount.$errors.length > 0"
-            @input="handleInput"
-            @keydown="handleKeydown"
-            @blur="handleBlur"
-          />
-          <div>
-            <Button :label="state.form.id ? 'Update' : 'Add'" type="submit" size="small" :loading="state.loading.creatingOrEditingTransaction" />
+        <Popover ref="op">
+          <div class="flex flex-col">
             <Button
-              label="Cancel"
               type="button"
-              class="ml-4"
-              severity="secondary"
               size="small"
-              @click="close()"
+              severity="secondary"
+              label="Edit"
+              @click="editTransaction()"
+            />
+            <Button
+              class="mt-4"
+              type="button"
+              size="small"
+              severity="danger"
+              label="Delete"
+              @click="deleteTransaction()"
             />
           </div>
-        </form>
-      </Dialog>
-    </template>
-  </Card>
+        </Popover>
+
+
+        <Button
+          class="mt-5"
+          type="button"
+          label="Add Transaction"
+          size="small"
+          severity="secondary"
+          @click="addOrEditTransaction()"
+        />
+
+        <Dialog
+          v-model:visible="state.addOrEditTransaction"
+          modal
+          header="Add Transaction"
+          class="w-full mx-4 sm:mx-0 sm:w-96"
+          :closable="false"
+        >
+          <form class="flex flex-col gap-3" @submit.prevent="createOrEditTransaction()">
+            <InputText
+              v-model="state.form.name"
+              label="Name"
+              placeholder="Transaction Name"
+              :invalid="v$.state.form.name.$errors.length > 0"
+            />
+            <InputText
+              inputmode="numeric"
+              :value="formattedAmount"
+              :invalid="v$.state.form.amount.$errors.length > 0"
+              @input="handleInput"
+              @keydown="handleKeydown"
+              @blur="handleBlur"
+            />
+            <div>
+              <Button :label="state.form.id ? 'Update' : 'Add'" type="submit" size="small" :loading="state.loading.creatingOrEditingTransaction" />
+              <Button
+                label="Cancel"
+                type="button"
+                class="ml-4"
+                severity="secondary"
+                size="small"
+                @click="close()"
+              />
+            </div>
+          </form>
+        </Dialog>
+      </template>
+    </Card>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import { useVuelidate } from "@vuelidate/core";
 import { required } from "@vuelidate/validators";
-import { Button, Card, Column, ConfirmDialog, DataTable, Dialog, InputText, Popover, useConfirm } from "primevue";
+import {
+  Button,
+  Card,
+  Column,
+  ConfirmDialog,
+  DataTable,
+  Dialog,
+  InputText,
+  Popover,
+  ProgressSpinner,
+  useConfirm,
+} from "primevue";
 import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
