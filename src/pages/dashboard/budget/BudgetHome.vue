@@ -1,28 +1,30 @@
 <template>
   <div class="w-full flex justify-center">
-    <section class="w-full">
-      <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-        <div>
-          <DatePicker
-            :model-value="state.selectedMonth"
-            view="month"
-            date-format="MM-yy"
-            @update:model-value="selectMonth"
-          />
-        </div>
+    <div v-show="state.loading.budgetMonth" class="flex justify-center items-center">
+      <ProgressSpinner />
+    </div>
+    <section v-show="!state.loading.budgetMonth" class="w-full">
+      <div class="flex justify-center items-center w-full">
+        <div class="sm:w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+          <div>
+            <DatePicker
+              :model-value="state.selectedMonth"
+              view="month"
+              date-format="MM-yy"
+              @update:model-value="selectMonth"
+            />
+          </div>
     
-        <div v-show="!state.loading.budgetMonth && !state.budgetMonth" class="flex justify-end">
-          <Button
-            label="Create Budget"
-            type="button"
-            severity="contrast"
-            :loading="state.loading.creatingBudget"
-            @click="createBudget()"
-          />
+          <div v-show="!state.loading.budgetMonth && !state.budgetMonth" class="mt-20 sm:flex sm:mt-0 sm:justify-end m-auto sm:m-0">
+            <Button
+              label="Create Budget"
+              type="button"
+              severity="contrast"
+              :loading="state.loading.creatingBudget"
+              @click="createBudget()"
+            />
+          </div>
         </div>
-      </div>
-      <div v-show="state.loading.budgetMonth" class="flex justify-center items-center">
-        <ProgressSpinner />
       </div>
       <div v-if="state.budgetItems.length" class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div v-for="group in state.budgetItems" :key="group.type" class="w-full">
