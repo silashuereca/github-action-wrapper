@@ -20,12 +20,14 @@ export class BudgetExpenseApi {
   static async createBudgetExpense(variables: {
     amount: number;
     budget_item_id: string;
+    budget_month_id: string;
     name: string;
   }): Promise<{ success: boolean }> {
-    const { amount, budget_item_id, name } = variables;
+    const { amount, budget_item_id, budget_month_id, name } = variables;
     const { error } = await supabase.from("budget_expenses").insert({
       amount,
       budget_item_id,
+      budget_month_id,
       name,
     });
 

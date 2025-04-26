@@ -54,6 +54,7 @@ export type Database = {
         Insert: {
           amount: number;
           budget_item_id?: string | null;
+          budget_month_id: string;
           created_at?: string | null;
           date?: string;
           id?: string;
@@ -67,10 +68,18 @@ export type Database = {
             referencedColumns: ["id"];
             referencedRelation: "budget_items";
           },
+          {
+            columns: ["budget_month_id"];
+            foreignKeyName: "budget_expenses_budget_month_id_fkey";
+            isOneToOne: false;
+            referencedColumns: ["id"];
+            referencedRelation: "budget_months";
+          },
         ];
         Row: {
           amount: number;
           budget_item_id: string | null;
+          budget_month_id: string;
           created_at: string | null;
           date: string;
           id: string;
@@ -79,6 +88,7 @@ export type Database = {
         Update: {
           amount?: number;
           budget_item_id?: string | null;
+          budget_month_id?: string;
           created_at?: string | null;
           date?: string;
           id?: string;

@@ -153,6 +153,7 @@ const router = useRouter();
 const route = useRoute();
 const monthId = route.params.id as string;
 const budgetItemId = route.params.itemId as string;
+const budgetMonthId = route.params.id as string;
 
 const op = ref();
 const state: TState = reactive({
@@ -215,6 +216,7 @@ async function createOrEditTransaction(): Promise<void> {
       await BudgetExpenseApi.createBudgetExpense({
         amount: inputAmount,
         budget_item_id: budgetItemId,
+        budget_month_id: budgetMonthId,
         name,
       });
     }
