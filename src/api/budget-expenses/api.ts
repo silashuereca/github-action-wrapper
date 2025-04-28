@@ -6,6 +6,17 @@ export type TBudgetExpenseInsert = Database["public"]["Tables"]["budget_expenses
 export type TBudgetExpenseUpdate = Database["public"]["Tables"]["budget_expenses"]["Update"];
 
 export class BudgetExpenseApi {
+  static async getAllMonthlyExpenses(variables: { budgetMonthId: string }): Promise<TBudgetExpenseRow[]> {
+    const { budgetMonthId } = variables;
+    const { data, error } = await supabase.from("budget_expenses").select("*").eq("budget_month_id", budgetMonthId);
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return data;
+  }
+
   static async getBudgetExpenses(variables: { id: string }): Promise<TBudgetExpenseRow[]> {
     const { id } = variables;
     const { data, error } = await supabase.from("budget_expenses").select("*").eq("budget_item_id", id);
