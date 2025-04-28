@@ -26,8 +26,46 @@
           </div>
         </div>
       </div>
+
+      <div v-show="state.budgetItems.length" class="w-full mb-2">
+        <Tabs v-model:value="state.tab">
+          <TabList>
+            <Tab value="planned">
+              Planned
+            </Tab>
+            <Tab value="spent">
+              Spent
+            </Tab>
+            <Tab value="remaining">
+              Remaining
+            </Tab>
+          </TabList>
+        </Tabs>
+
+        <!-- Planned -->
+        <dl v-show="state.tab === 'planned'" class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
+            <dt class="truncate text-sm font-medium text-gray-500">
+              Income
+            </dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-green-600" v-text="formatCurrency(totalIncome)" />
+          </div>
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
+            <dt class="truncate text-sm font-medium text-gray-500">
+              Total Budget
+            </dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-blue-600" v-text="formatCurrency(monthlyBudgetTotal)" />
+          </div>
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
+            <dt class="truncate text-sm font-medium text-gray-500">
+              Left To Budget
+            </dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-800" :class="[isNegativeBudget ? 'text-red-700' : 'text-gray-800']" v-text="formatCurrency(leftToBudget)" />
+          </div>
+        </dl>
+      </div>
       <div v-if="state.budgetItems.length" class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div v-for="group in state.budgetItems" :key="group.type" class="w-full">
+        <div v-for="group in state.budgetItemGroups" :key="group.type" class="w-full">
           <Panel :header="renderTypeHeader(group.type)">
             <ul>
               <li v-for="budgetItem in group.items" :key="budgetItem.id" class="mb-3">
@@ -46,7 +84,7 @@
 
 <script lang="ts" setup>
 import { DateTime } from "luxon";
-import { Panel, ProgressSpinner } from "primevue";
+import { Panel, ProgressSpinner, Tab, TabList, Tabs } from "primevue";
 import { Button, DatePicker } from "primevue";
 import { onMounted, reactive } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -57,25 +95,30 @@ import { renderTypeHeader } from "../../../api/budget-items/utils";
 import { BudgetMonthApi, TBudgetMonth } from "../../../api/budget-months/api";
 import CreateBudgetItem from "../../../components/budget/CreateBudgetItem.vue";
 import EditBudgetItem from "../../../components/budget/EditBudgetItem.vue";
+import { useBudget } from "../../../hooks/budget";
+import { formatCurrency } from "../../../utils/common";
 
-type TBudgetGroup = {
+export type TBudgetGroup = {
   items: TBudgetItem[];
   type: TBudgetItem["type"];
 };
 
 type TState = {
-  budgetItems: TBudgetGroup[];
+  budgetItemGroups: TBudgetGroup[];
+  budgetItems: TBudgetItem[];
   budgetMonth: TBudgetMonth | null;
   loading: {
     budgetMonth: boolean;
     creatingBudget: boolean;
   };
   selectedMonth: Date;
+  tab: "planned" | "spent" | "remaining";
 };
 
 const route = useRoute();
 const router = useRouter();
 const state: TState = reactive({
+  budgetItemGroups: [],
   budgetItems: [],
   budgetMonth: null,
   loading: {
@@ -83,7 +126,9 @@ const state: TState = reactive({
     creatingBudget: false,
   },
   selectedMonth: null,
+  tab: "planned",
 });
+const { isNegativeBudget, leftToBudget, monthlyBudgetTotal, totalIncome } = useBudget(state);
 
 onMounted(() => {
   setDefaultDate();
@@ -104,7 +149,8 @@ async function setDefaultDate(): Promise<void> {
     if (result) {
       state.budgetMonth = result;
       const items = await BudgetItemApi.getBudgetItems(state.budgetMonth.id);
-      state.budgetItems = groupBudgetItems(items);
+      state.budgetItems = items;
+      state.budgetItemGroups = groupBudgetItems(items);
       state.selectedMonth = DateTime.fromISO(result.month_start).toJSDate();
       router.replace({
         name: "budget-month",
@@ -178,7 +224,8 @@ function groupBudgetItems(items: TBudgetItem[]): { items: TBudgetItem[]; type: T
 
 async function fetchBudgetItems(): Promise<void> {
   const result = await BudgetItemApi.getBudgetItems(state.budgetMonth.id);
-  state.budgetItems = groupBudgetItems(result);
+  state.budgetItems = result;
+  state.budgetItemGroups = groupBudgetItems(result);
 }
 
 function refreshBudgetItems(): void {
@@ -202,7 +249,8 @@ async function createBudget(): Promise<void> {
     if (result) {
       state.budgetMonth = result;
       const items = await BudgetItemApi.getBudgetItems(result.id);
-      state.budgetItems = groupBudgetItems(items);
+      state.budgetItems = items;
+      state.budgetItemGroups = groupBudgetItems(items);
       router.replace({
         name: "budget-month",
         params: { id: result.id },
