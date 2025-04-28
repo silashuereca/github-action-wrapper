@@ -64,10 +64,10 @@
         <!-- Spent -->
         <dl v-show="state.tab === 'spent'" class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
-            <dt class="truncate text-sm font-medium text-gray-500">
+            <dt class="truncate text-sm font-medium" :class="[overSpentOnTotalIncome ? 'text-red-700' : 'text-gray-500']">
               Spent So Far
             </dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-green-600" v-text="formatCurrency(totalExpenses)" />
+            <dd class="mt-1 text-3xl font-semibold tracking-tight" :class="[overSpentOnTotalIncome ? 'text-red-700' : 'text-green-600']" v-text="formatCurrency(totalExpenses)" />
           </div>
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
             <dt class="truncate text-sm font-medium text-gray-500">
@@ -76,10 +76,10 @@
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-slate-800" v-text="formatCurrency(remainingToSpendTotal)" />
           </div>
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
-            <dt class="truncate text-sm font-medium text-gray-500">
+            <dt class="truncate text-sm font-medium" :class="[percentageIsOverBudget ? 'text-red-700' : 'text-gray-800']">
               % of Budget Spent
             </dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-800" :class="[percentageIsOverBudget ? 'text-red-700' : 'text-gray-800']" v-text="'% ' + percentageOfBudgetSpent.toFixed(2)" />
+            <dd class="mt-1 text-2xl font-semibold tracking-tight text-gray-800" :class="[percentageIsOverBudget ? 'text-red-700' : 'text-gray-800']" v-text="`${percentageOfBudgetSpent.toFixed(0)}%`" />
           </div>
         </dl>
       </div>
@@ -155,6 +155,7 @@ const {
   isNegativeBudget,
   leftToBudget,
   monthlyBudgetTotal,
+  overSpentOnTotalIncome,
   percentageIsOverBudget,
   percentageOfBudgetSpent,
   remainingToSpendTotal,

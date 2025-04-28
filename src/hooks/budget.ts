@@ -16,6 +16,7 @@ export function useBudget(state: TBudget): {
   isNegativeBudget: ComputedRef<boolean>;
   leftToBudget: ComputedRef<number>;
   monthlyBudgetTotal: ComputedRef<number>;
+  overSpentOnTotalIncome: ComputedRef<boolean>;
   percentageIsOverBudget: ComputedRef<boolean>;
   percentageOfBudgetSpent: ComputedRef<number>;
   remainingToSpendTotal: ComputedRef<number>;
@@ -63,10 +64,15 @@ export function useBudget(state: TBudget): {
     return percentage > 100;
   });
 
+  const overSpentOnTotalIncome = computed(() => {
+    return totalExpenses.value > totalIncome.value;
+  });
+
   return {
     isNegativeBudget,
     leftToBudget,
     monthlyBudgetTotal,
+    overSpentOnTotalIncome,
     percentageIsOverBudget,
     percentageOfBudgetSpent,
     remainingToSpendTotal,
