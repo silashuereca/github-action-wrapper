@@ -33,7 +33,7 @@ export function useBudget(state: TBudget): {
   });
 
   const leftToBudget = computed(() => {
-    return totalIncome.value - totalExpenses.value;
+    return totalIncome.value - monthlyBudgetTotal.value;
   });
 
   const isNegativeBudget = computed(() => {
