@@ -1,52 +1,76 @@
 import { computed, ComputedRef } from "vue";
 
+import { TBudgetExpenseRow } from "../api/budget-expenses/api";
 import { TBudgetItem } from "../api/budget-items/api";
 
-export function incomeTotal(incomes: number[]): number {
-  return incomes.reduce((acc, income) => acc + income, 0);
-}
+export type TBudget = {
+  budgetExpenses: TBudgetExpenseRow[];
+  budgetItems: TBudgetItem[];
+};
 
-export function monthlyBudgetTotal(amounts: number[]): number {
+function total(amounts: number[]): number {
   return amounts.reduce((acc, amount) => acc + amount, 0);
 }
 
-export function leftToBudget(options: { budget: number; income: number }): number {
-  const { budget, income } = options;
-  return income - budget;
-}
-
-export function useBudget(state: { budgetItems: TBudgetItem[] }): {
+export function useBudget(state: TBudget): {
   isNegativeBudget: ComputedRef<boolean>;
   leftToBudget: ComputedRef<number>;
   monthlyBudgetTotal: ComputedRef<number>;
+  percentageIsOverBudget: ComputedRef<boolean>;
+  percentageOfBudgetSpent: ComputedRef<number>;
+  remainingToSpendTotal: ComputedRef<number>;
+  totalExpenses: ComputedRef<number>;
   totalIncome: ComputedRef<number>;
 } {
-  const totalIncomeComputed = computed(() => {
+  const totalIncome = computed(() => {
     const incomes = state.budgetItems.filter((item) => item.type === "income").map((item) => item.budgeted_amount);
-    return incomeTotal(incomes);
+    return total(incomes);
   });
 
-  const monthlyBudgetTotalComputed = computed(() => {
-    return monthlyBudgetTotal(
-      state.budgetItems.filter((item) => item.type !== "income").map((item) => item.budgeted_amount),
-    );
+  const monthlyBudgetTotal = computed(() => {
+    return total(state.budgetItems.filter((item) => item.type !== "income").map((item) => item.budgeted_amount));
   });
 
-  const leftToBudgetComputed = computed(() => {
-    return leftToBudget({
-      budget: monthlyBudgetTotalComputed.value,
-      income: totalIncomeComputed.value,
-    });
+  const leftToBudget = computed(() => {
+    return totalIncome.value - totalExpenses.value;
   });
 
   const isNegativeBudget = computed(() => {
-    return leftToBudgetComputed.value < 0;
+    return leftToBudget.value < 0;
+  });
+
+  const totalExpenses = computed(() => {
+    const expenses = state.budgetExpenses.map((item) => item.amount);
+    return total(expenses);
+  });
+
+  const remainingToSpendTotal = computed(() => {
+    return totalIncome.value - totalExpenses.value;
+  });
+
+  const percentageOfBudgetSpent = computed(() => {
+    if (monthlyBudgetTotal.value === 0) {
+      return 0;
+    }
+    return (totalExpenses.value / monthlyBudgetTotal.value) * 100;
+  });
+
+  const percentageIsOverBudget = computed(() => {
+    if (monthlyBudgetTotal.value === 0) {
+      return false;
+    }
+    const percentage = (totalExpenses.value / monthlyBudgetTotal.value) * 100;
+    return percentage > 100;
   });
 
   return {
     isNegativeBudget,
-    leftToBudget: leftToBudgetComputed,
-    monthlyBudgetTotal: monthlyBudgetTotalComputed,
-    totalIncome: totalIncomeComputed,
+    leftToBudget,
+    monthlyBudgetTotal,
+    percentageIsOverBudget,
+    percentageOfBudgetSpent,
+    remainingToSpendTotal,
+    totalExpenses,
+    totalIncome,
   };
 }

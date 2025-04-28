@@ -36,9 +36,6 @@
             <Tab value="spent">
               Spent
             </Tab>
-            <Tab value="remaining">
-              Remaining
-            </Tab>
           </TabList>
         </Tabs>
 
@@ -54,13 +51,35 @@
             <dt class="truncate text-sm font-medium text-gray-500">
               Total Budget
             </dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-blue-600" v-text="formatCurrency(monthlyBudgetTotal)" />
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-slate-600" v-text="formatCurrency(monthlyBudgetTotal)" />
           </div>
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
             <dt class="truncate text-sm font-medium text-gray-500">
               Left To Budget
             </dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-800" :class="[isNegativeBudget ? 'text-red-700' : 'text-gray-800']" v-text="formatCurrency(leftToBudget)" />
+          </div>
+        </dl>
+
+        <!-- Spent -->
+        <dl v-show="state.tab === 'spent'" class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
+            <dt class="truncate text-sm font-medium text-gray-500">
+              Spent So Far
+            </dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-green-600" v-text="formatCurrency(totalExpenses)" />
+          </div>
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
+            <dt class="truncate text-sm font-medium text-gray-500">
+              Remaining to Spend
+            </dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-slate-800" v-text="formatCurrency(remainingToSpendTotal)" />
+          </div>
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
+            <dt class="truncate text-sm font-medium text-gray-500">
+              % of Budget Spent
+            </dt>
+            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-800" :class="[percentageIsOverBudget ? 'text-red-700' : 'text-gray-800']" v-text="'% ' + percentageOfBudgetSpent.toFixed(2)" />
           </div>
         </dl>
       </div>
@@ -90,6 +109,7 @@ import { onMounted, reactive } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { supabase } from "../../../../supabase";
+import { BudgetExpenseApi, TBudgetExpenseRow } from "../../../api/budget-expenses/api";
 import { BudgetItemApi, TBudgetItem } from "../../../api/budget-items/api";
 import { renderTypeHeader } from "../../../api/budget-items/utils";
 import { BudgetMonthApi, TBudgetMonth } from "../../../api/budget-months/api";
@@ -104,6 +124,7 @@ export type TBudgetGroup = {
 };
 
 type TState = {
+  budgetExpenses: TBudgetExpenseRow[];
   budgetItemGroups: TBudgetGroup[];
   budgetItems: TBudgetItem[];
   budgetMonth: TBudgetMonth | null;
@@ -112,12 +133,13 @@ type TState = {
     creatingBudget: boolean;
   };
   selectedMonth: Date;
-  tab: "planned" | "spent" | "remaining";
+  tab: "planned" | "spent";
 };
 
 const route = useRoute();
 const router = useRouter();
 const state: TState = reactive({
+  budgetExpenses: [],
   budgetItemGroups: [],
   budgetItems: [],
   budgetMonth: null,
@@ -128,7 +150,17 @@ const state: TState = reactive({
   selectedMonth: null,
   tab: "planned",
 });
-const { isNegativeBudget, leftToBudget, monthlyBudgetTotal, totalIncome } = useBudget(state);
+
+const {
+  isNegativeBudget,
+  leftToBudget,
+  monthlyBudgetTotal,
+  percentageIsOverBudget,
+  percentageOfBudgetSpent,
+  remainingToSpendTotal,
+  totalExpenses,
+  totalIncome,
+} = useBudget(state);
 
 onMounted(() => {
   setDefaultDate();
@@ -149,7 +181,9 @@ async function setDefaultDate(): Promise<void> {
     if (result) {
       state.budgetMonth = result;
       const items = await BudgetItemApi.getBudgetItems(state.budgetMonth.id);
+      const expense = await BudgetExpenseApi.getAllMonthlyExpenses({ budgetMonthId: result.id });
       state.budgetItems = items;
+      state.budgetExpenses = expense;
       state.budgetItemGroups = groupBudgetItems(items);
       state.selectedMonth = DateTime.fromISO(result.month_start).toJSDate();
       router.replace({
@@ -224,6 +258,8 @@ function groupBudgetItems(items: TBudgetItem[]): { items: TBudgetItem[]; type: T
 
 async function fetchBudgetItems(): Promise<void> {
   const result = await BudgetItemApi.getBudgetItems(state.budgetMonth.id);
+  const expense = await BudgetExpenseApi.getAllMonthlyExpenses({ budgetMonthId: state.budgetMonth.id });
+  state.budgetExpenses = expense;
   state.budgetItems = result;
   state.budgetItemGroups = groupBudgetItems(result);
 }
