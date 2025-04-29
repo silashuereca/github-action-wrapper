@@ -8,7 +8,7 @@ export type TBudget = {
   budgetItems: TBudgetItem[];
 };
 
-function total(amounts: number[]): number {
+export function getTotal(amounts: number[]): number {
   return amounts.reduce((acc, amount) => acc + amount, 0);
 }
 
@@ -25,11 +25,11 @@ export function useBudget(state: TBudget): {
 } {
   const totalIncome = computed(() => {
     const incomes = state.budgetItems.filter((item) => item.type === "income").map((item) => item.budgeted_amount);
-    return total(incomes);
+    return getTotal(incomes);
   });
 
   const monthlyBudgetTotal = computed(() => {
-    return total(state.budgetItems.filter((item) => item.type !== "income").map((item) => item.budgeted_amount));
+    return getTotal(state.budgetItems.filter((item) => item.type !== "income").map((item) => item.budgeted_amount));
   });
 
   const leftToBudget = computed(() => {
@@ -42,7 +42,7 @@ export function useBudget(state: TBudget): {
 
   const totalExpenses = computed(() => {
     const expenses = state.budgetExpenses.map((item) => item.amount);
-    return total(expenses);
+    return getTotal(expenses);
   });
 
   const remainingToSpendTotal = computed(() => {

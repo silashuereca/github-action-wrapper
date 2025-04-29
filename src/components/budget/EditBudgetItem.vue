@@ -1,8 +1,13 @@
 <template>
   <div class="w-full flex justify-between items-center">
-    <button v-show="!state.edit" type="button" class="flex justify-between w-full border-b border-blue-300 pb-2 hover:bg-gray-50 cursor-pointer" @click="viewExpenses()">
-      <p class="text-sm" v-text="budgetItem.name" />
-      <p class="text-sm" v-text="formatCurrency(budgetItem.budgeted_amount)" />
+    <button v-show="!state.edit" type="button" class="hover:bg-gray-50 cursor-pointer w-full" @click="viewExpenses()">
+      <div class="flex items-center justify-between w-full">
+        <p class="text-sm" v-text="budgetItem.name" />
+        <p class="text-sm" v-text="formatCurrency(budgetItem.budgeted_amount)" />
+      </div>
+      <div class="flex justify-center items-center w-full h-4 rounded-md overflow-visible border border-gray-200" :class="[setProgressColor()]" :style="{ width: setProgressWidth() }">
+        <p class="text-xs" v-text="`${getExpensePercentage.toFixed(0)}%`" />
+      </div>
     </button>
     <button v-show="!state.edit" type="button" @click="toggle">
       <IconElipsisVertical class="size-6 text-gray-500 ml-4" />
@@ -31,6 +36,7 @@
     <ConfirmDialog :group="budgetItem.id" class="w-full mx-4 sm:mx-0 sm:w-96" />
     <BudgetItemForm
       v-if="state.edit"
+      class="w-full"
       :budget-item-id="budgetItem.id"
       :amount="budgetItem.budgeted_amount"
       :name="budgetItem.name"
@@ -43,14 +49,17 @@
 
 <script lang="ts" setup>
 import { Button, ConfirmDialog, Popover, useConfirm } from "primevue";
-import { PropType, reactive, ref } from "vue";
+import { computed, PropType, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 
+import { TBudgetExpenseRow } from "../../api/budget-expenses/api";
 import { TBudgetItem } from "../../api/budget-items/api";
 import { BudgetItemApi } from "../../api/budget-items/api";
+import { getTotal } from "../../hooks/budget";
 import IconElipsisVertical from "../../icons/IconElipsisVertical.vue";
 import { formatCurrency } from "../../utils/common";
 import BudgetItemForm from "./BudgetItemForm.vue";
+
 const props = defineProps({
   budgetItem: {
     required: true,
@@ -59,6 +68,10 @@ const props = defineProps({
   canDelete: {
     default: true,
     type: Boolean,
+  },
+  expenses: {
+    default: () => [],
+    type: Array as PropType<TBudgetExpenseRow[]>,
   },
 });
 
@@ -82,6 +95,42 @@ const state: TState = reactive({
     deletingItem: false,
   },
 });
+
+const getExpenses = computed(() => {
+  const expenses = props.expenses.filter((expense) => expense.budget_item_id === props.budgetItem.id);
+  return expenses;
+});
+
+const getExpensePercentage = computed(() => {
+  const total = getTotal(getExpenses.value.map((expense) => expense.amount));
+  const budgetedAmount = props.budgetItem.budgeted_amount;
+  if (total === 0 || budgetedAmount === 0) return 0;
+  return (total / budgetedAmount) * 100;
+});
+
+const isOverBudget = computed(() => {
+  return getExpensePercentage.value > 100;
+});
+
+function setProgressColor(): string {
+  if (isOverBudget.value) return "bg-red-600 text-white";
+  const percentage = getExpensePercentage.value;
+  if (percentage > 0) return "bg-green-500 text-white";
+  return "bg-gray-200 text-black";
+}
+
+function setProgressWidth(): string {
+  const percentage = getExpensePercentage.value;
+  const percentageWidth = getExpensePercentage.value + "%";
+  if (percentage >= 100 || percentage === 0) return 100 + "%";
+  if (percentage === 0) return percentageWidth;
+
+  const minVisibleWidth = 10;
+  if (percentage < minVisibleWidth) {
+    return minVisibleWidth + "%";
+  }
+  return percentageWidth;
+}
 
 const toggle = (event) => {
   op.value.toggle(event);
