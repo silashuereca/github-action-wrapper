@@ -83,12 +83,13 @@
           </div>
         </dl>
       </div>
+
       <div v-if="state.budgetItems.length" class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div v-for="group in state.budgetItemGroups" :key="group.type" class="w-full">
           <Panel :header="renderTypeHeader(group.type)">
             <ul>
               <li v-for="budgetItem in group.items" :key="budgetItem.id" class="mb-3">
-                <EditBudgetItem :budget-item="budgetItem" :can-delete="group.items.length > 1" @update:list="refreshBudgetItems()" />
+                <EditBudgetItem :budget-item="budgetItem" :can-delete="group.items.length > 1" :expenses="state.budgetExpenses" @update:list="refreshBudgetItems()" />
               </li>
               <li class="w-full">
                 <CreateBudgetItem :month-id="state.budgetMonth.id" :category="group.type" @update:list="refreshBudgetItems()" />
