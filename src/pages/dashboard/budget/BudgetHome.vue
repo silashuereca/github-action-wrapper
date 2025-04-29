@@ -49,13 +49,13 @@
           </div>
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
             <dt class="truncate text-sm font-medium text-gray-500">
-              Total Budget
+              Planned Budget
             </dt>
             <dd class="mt-1 text-2xl font-semibold tracking-tight text-slate-600" v-text="formatCurrency(monthlyBudgetTotal)" />
           </div>
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
-            <dt class="truncate text-sm font-medium text-gray-500">
-              Left To Budget
+            <dt class="truncate text-sm font-medium text-gray-500" title="Left Over Money To Budget">
+              Left Over Money To Budget
             </dt>
             <dd class="mt-1 text-2xl font-semibold tracking-tight text-gray-800" :class="[isNegativeBudget ? 'text-red-700' : 'text-gray-800']" v-text="formatCurrency(leftToBudget)" />
           </div>
@@ -71,7 +71,7 @@
           </div>
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
             <dt class="truncate text-sm font-medium text-gray-500">
-              Remaining to Spend
+              Income Left To Spend
             </dt>
             <dd class="mt-1 text-2xl font-semibold tracking-tight text-slate-800" v-text="formatCurrency(remainingToSpendTotal)" />
           </div>
