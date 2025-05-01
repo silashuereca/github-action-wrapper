@@ -46,6 +46,7 @@ import { computed, PropType, reactive } from "vue";
 
 import { BudgetItemApi, TBudgetItemCategory } from "../../api/budget-items/api";
 import { useMoneyInput } from "../../hooks/money-input";
+import { TTab } from "./types";
 
 const props = defineProps({
   amount: {
@@ -71,6 +72,10 @@ const props = defineProps({
   name: {
     default: null,
     type: String,
+  },
+  tab: {
+    default: "planned",
+    type: String as PropType<TTab>,
   },
 });
 

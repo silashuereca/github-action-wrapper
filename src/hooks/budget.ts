@@ -23,6 +23,11 @@ export function useBudget(state: TBudget): {
   totalExpenses: ComputedRef<number>;
   totalIncome: ComputedRef<number>;
 } {
+  function getIncomeId(budgetItems: TBudgetItem[]): string {
+    const incomeItem = budgetItems.find((item) => item.type === "income");
+    return incomeItem ? incomeItem.id : "";
+  }
+
   const totalIncome = computed(() => {
     const incomes = state.budgetItems.filter((item) => item.type === "income").map((item) => item.budgeted_amount);
     return getTotal(incomes);
@@ -41,7 +46,9 @@ export function useBudget(state: TBudget): {
   });
 
   const totalExpenses = computed(() => {
-    const expenses = state.budgetExpenses.map((item) => item.amount);
+    const expenses = state.budgetExpenses
+      .filter((expense) => expense.budget_item_id !== getIncomeId(state.budgetItems))
+      .map((item) => item.amount);
     return getTotal(expenses);
   });
 
