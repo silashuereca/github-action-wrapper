@@ -3,10 +3,10 @@
     <button v-show="!state.edit" type="button" class="hover:bg-gray-50 cursor-pointer w-full" @click="viewExpenses()">
       <div class="flex items-center justify-between w-full">
         <p class="text-sm" v-text="budgetItem.name" />
-        <p class="text-sm" v-text="formatCurrency(budgetItem.budgeted_amount)" />
+        <p class="text-sm" :class="[isOverBudget && 'text-red-500']" v-text="formatCurrency(renderTabViewForAmount)" />
       </div>
       <div class="flex justify-center items-center w-full h-4 rounded-md overflow-visible border border-gray-200" :class="[setProgressColor()]" :style="{ width: setProgressWidth() }">
-        <p class="text-xs" v-text="`${getExpensePercentage.toFixed(0)}%`" />
+        <p class="text-xs" v-text="`${getProgressPercentage.toFixed(0)}%`" />
       </div>
     </button>
     <button v-show="!state.edit" type="button" @click="toggle">
@@ -59,6 +59,7 @@ import { getTotal } from "../../hooks/budget";
 import IconElipsisVertical from "../../icons/IconElipsisVertical.vue";
 import { formatCurrency } from "../../utils/common";
 import BudgetItemForm from "./BudgetItemForm.vue";
+import { TTab } from "./types";
 
 const props = defineProps({
   budgetItem: {
@@ -72,6 +73,10 @@ const props = defineProps({
   expenses: {
     default: () => [],
     type: Array as PropType<TBudgetExpenseRow[]>,
+  },
+  tab: {
+    default: "planned",
+    type: String as PropType<TTab>,
   },
 });
 
@@ -101,6 +106,29 @@ const getExpenses = computed(() => {
   return expenses;
 });
 
+const renderTabViewForAmount = computed(() => {
+  if (props.tab === "planned") {
+    return props.budgetItem.budgeted_amount;
+  } else if (props.tab === "spent") {
+    return getTotal(getExpenses.value.map((expense) => expense.amount));
+  } else if (props.tab === "remaining") {
+    return props.budgetItem.budgeted_amount - getTotal(getExpenses.value.map((expense) => expense.amount));
+  }
+  return 0;
+});
+
+const getProgressPercentage = computed(() => {
+  if (props.tab === "planned") {
+    //render planned percentage
+    return getExpensePercentage.value;
+  } else if (props.tab === "spent") {
+    //render spent percentage
+    return getExpensePercentage.value;
+  }
+  //render remaining percentage
+  return getRemainingPercentage();
+});
+
 const getExpensePercentage = computed(() => {
   const total = getTotal(getExpenses.value.map((expense) => expense.amount));
   const budgetedAmount = props.budgetItem.budgeted_amount;
@@ -112,6 +140,13 @@ const isOverBudget = computed(() => {
   return getExpensePercentage.value > 100;
 });
 
+function getRemainingPercentage(): number {
+  const total = getTotal(getExpenses.value.map((expense) => expense.amount));
+  const budgetedAmount = props.budgetItem.budgeted_amount;
+  if (total === 0 || budgetedAmount === 0) return 0;
+  return ((budgetedAmount - total) / budgetedAmount) * 100;
+}
+
 function setProgressColor(): string {
   if (isOverBudget.value) return "bg-red-600 text-white";
   const percentage = getExpensePercentage.value;
@@ -120,8 +155,8 @@ function setProgressColor(): string {
 }
 
 function setProgressWidth(): string {
-  const percentage = getExpensePercentage.value;
-  const percentageWidth = getExpensePercentage.value + "%";
+  const percentage = getProgressPercentage.value;
+  const percentageWidth = getProgressPercentage.value + "%";
   if (percentage >= 100 || percentage === 0) return 100 + "%";
   if (percentage === 0) return percentageWidth;
 

@@ -36,6 +36,9 @@
             <Tab value="spent">
               Spent
             </Tab>
+            <Tab value="remaining">
+              Remaining
+            </Tab>
           </TabList>
         </Tabs>
 
@@ -62,18 +65,12 @@
         </dl>
 
         <!-- Spent -->
-        <dl v-show="state.tab === 'spent'" class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <dl v-show="state.tab === 'spent'" class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
             <dt class="truncate text-sm font-medium" :class="[overSpentOnTotalIncome ? 'text-red-700' : 'text-gray-500']">
               Spent So Far
             </dt>
             <dd class="mt-1 text-2xl font-semibold tracking-tight" :class="[overSpentOnTotalIncome ? 'text-red-700' : 'text-green-600']" v-text="formatCurrency(totalExpenses)" />
-          </div>
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
-            <dt class="truncate text-sm font-medium text-gray-500">
-              Income Left To Spend
-            </dt>
-            <dd class="mt-1 text-2xl font-semibold tracking-tight text-slate-800" v-text="formatCurrency(remainingToSpendTotal)" />
           </div>
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
             <dt class="truncate text-sm font-medium" :class="[percentageIsOverBudget ? 'text-red-700' : 'text-gray-800']">
@@ -82,14 +79,36 @@
             <dd class="mt-1 text-2xl font-semibold tracking-tight text-gray-800" :class="[percentageIsOverBudget ? 'text-red-700' : 'text-gray-800']" v-text="`${percentageOfBudgetSpent.toFixed(0)}%`" />
           </div>
         </dl>
+
+        <!-- Spent -->
+        <dl v-show="state.tab === 'remaining'" class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow-lg sm:p-6">
+            <dt class="truncate text-sm font-medium text-gray-500">
+              Remaining To Spend
+            </dt>
+            <dd class="mt-1 text-2xl font-semibold tracking-tight text-slate-800" v-text="formatCurrency(remainingToSpendTotal)" />
+          </div>
+        </dl>
       </div>
 
       <div v-if="state.budgetItems.length" class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div v-for="group in state.budgetItemGroups" :key="group.type" class="w-full">
-          <Panel :header="renderTypeHeader(group.type)">
+          <Panel>
+            <template #header>
+              <div class="w-full flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-900" v-text="renderTypeHeader(group.type)" />
+                <p class="text-sm text-gray-600" v-text="renderTabTitle(group.type)" />
+              </div>
+            </template>
             <ul>
               <li v-for="budgetItem in group.items" :key="budgetItem.id" class="mb-3">
-                <EditBudgetItem :budget-item="budgetItem" :can-delete="group.items.length > 1" :expenses="state.budgetExpenses" @update:list="refreshBudgetItems()" />
+                <EditBudgetItem
+                  :budget-item="budgetItem"
+                  :can-delete="group.items.length > 1"
+                  :tab="state.tab"
+                  :expenses="state.budgetExpenses"
+                  @update:list="refreshBudgetItems()"
+                />
               </li>
               <li class="w-full">
                 <CreateBudgetItem :month-id="state.budgetMonth.id" :category="group.type" @update:list="refreshBudgetItems()" />
@@ -116,6 +135,7 @@ import { renderTypeHeader } from "../../../api/budget-items/utils";
 import { BudgetMonthApi, TBudgetMonth } from "../../../api/budget-months/api";
 import CreateBudgetItem from "../../../components/budget/CreateBudgetItem.vue";
 import EditBudgetItem from "../../../components/budget/EditBudgetItem.vue";
+import { TTab } from "../../../components/budget/types";
 import { useBudget } from "../../../hooks/budget";
 import { formatCurrency } from "../../../utils/common";
 
@@ -134,7 +154,7 @@ type TState = {
     creatingBudget: boolean;
   };
   selectedMonth: Date;
-  tab: "planned" | "spent";
+  tab: TTab;
 };
 
 const route = useRoute();
@@ -222,6 +242,21 @@ async function selectMonth(value: Date): Promise<void> {
     });
   } finally {
     state.loading.budgetMonth = false;
+  }
+}
+
+function renderTabTitle(type: TBudgetItem["type"]): string {
+  const tab = state.tab;
+  if (tab === "planned") {
+    return "Planned";
+  } else if (tab === "spent") {
+    if (type === "income") {
+      return "Received";
+    } else {
+      return "Spent";
+    }
+  } else if (tab === "remaining") {
+    return "Remaining";
   }
 }
 
