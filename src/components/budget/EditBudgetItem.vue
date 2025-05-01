@@ -119,13 +119,10 @@ const renderTabViewForAmount = computed(() => {
 
 const getProgressPercentage = computed(() => {
   if (props.tab === "planned") {
-    //render planned percentage
     return getExpensePercentage.value;
   } else if (props.tab === "spent") {
-    //render spent percentage
     return getExpensePercentage.value;
   }
-  //render remaining percentage
   return getRemainingPercentage();
 });
 
