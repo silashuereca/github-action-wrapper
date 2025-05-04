@@ -104,10 +104,10 @@
               <li v-for="budgetItem in group.items" :key="budgetItem.id" class="mb-3">
                 <EditBudgetItem
                   :budget-item="budgetItem"
-                  can-delete
                   :tab="state.tab"
                   :expenses="state.budgetExpenses"
                   @update:list="refreshBudgetItems()"
+                  @update:expenses="refreshBudgetExpenses()"
                 />
               </li>
               <li class="w-full">
@@ -301,6 +301,13 @@ async function fetchBudgetItems(): Promise<void> {
   state.budgetExpenses = expense;
   state.budgetItems = result;
   state.budgetItemGroups = groupBudgetItems(result);
+}
+
+async function refreshBudgetExpenses(): Promise<void> {
+  if (state.budgetMonth) {
+    const expense = await BudgetExpenseApi.getAllMonthlyExpenses({ budgetMonthId: state.budgetMonth.id });
+    state.budgetExpenses = expense;
+  }
 }
 
 function refreshBudgetItems(): void {

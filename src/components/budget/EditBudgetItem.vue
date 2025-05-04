@@ -23,7 +23,14 @@
           @click="editBudgetItem"
         />
         <Button
-          v-show="canDelete"
+          type="button"
+          class="mt-4"
+          size="small"
+          label="Quick"
+          severity="success"
+          @click="showQuickExpenseModal()"
+        />
+        <Button
           class="mt-4"
           type="button"
           size="small"
@@ -44,18 +51,58 @@
       @update:form="updateList()"
       @update:cancel="cancel()"
     />
+
+    <Dialog
+      v-model:visible="state.showQuickExpenseModal"
+      modal
+      header="Add Transaction"
+      class="w-full mx-4 sm:mx-0 sm:w-96"
+      :closable="false"
+    >
+      <form class="flex flex-col gap-3" @submit.prevent="addExpense()">
+        <InputText
+          v-model="state.expenseForm.name"
+          label="Name"
+          placeholder="Transaction Name"
+          :invalid="v$.state.expenseForm.name.$errors.length > 0"
+        />
+        <InputText
+          inputmode="numeric"
+          :value="formattedAmount"
+          :invalid="v$.state.expenseForm.amount.$errors.length > 0"
+          @input="handleInput"
+          @keydown="handleKeydown"
+          @blur="handleBlur"
+        />
+        <div>
+          <Button label="Add" type="submit" size="small" :loading="state.loading.addExpense" />
+          <Button
+            label="Cancel"
+            type="button"
+            class="ml-4"
+            severity="secondary"
+            size="small"
+            @click="cancel()"
+          />
+        </div>
+      </form>
+    </Dialog>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { Button, ConfirmDialog, Popover, useConfirm } from "primevue";
+import { useVuelidate } from "@vuelidate/core";
+import { required } from "@vuelidate/validators";
+import { Button, ConfirmDialog, Dialog, InputText, Popover, useConfirm } from "primevue";
 import { computed, PropType, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 
+import { BudgetExpenseApi } from "../../api/budget-expenses/api";
 import { TBudgetExpenseRow } from "../../api/budget-expenses/api";
 import { TBudgetItem } from "../../api/budget-items/api";
 import { BudgetItemApi } from "../../api/budget-items/api";
 import { getTotal } from "../../hooks/budget";
+import { useMoneyInput } from "../../hooks/money-input";
 import IconElipsisVertical from "../../icons/IconElipsisVertical.vue";
 import { formatCurrency } from "../../utils/common";
 import BudgetItemForm from "./BudgetItemForm.vue";
@@ -65,10 +112,6 @@ const props = defineProps({
   budgetItem: {
     required: true,
     type: Object as PropType<TBudgetItem>,
-  },
-  canDelete: {
-    default: true,
-    type: Boolean,
   },
   expenses: {
     default: () => [],
@@ -81,14 +124,21 @@ const props = defineProps({
 });
 
 const emit = defineEmits<{
+  "update:expenses";
   "update:list";
 }>();
 
 type TState = {
   edit: boolean;
+  expenseForm: {
+    amount: string;
+    name: string;
+  };
   loading: {
+    addExpense: boolean;
     deletingItem: boolean;
   };
+  showQuickExpenseModal: boolean;
 };
 
 const router = useRouter();
@@ -96,10 +146,34 @@ const op = ref();
 const confirm = useConfirm();
 const state: TState = reactive({
   edit: false,
+  expenseForm: {
+    amount: "",
+    name: "",
+  },
   loading: {
+    addExpense: false,
     deletingItem: false,
   },
+  showQuickExpenseModal: false,
 });
+
+const rules = computed(() => {
+  return {
+    state: {
+      expenseForm: {
+        amount: { required },
+        name: { required },
+      },
+    },
+  };
+});
+
+const v$: any = useVuelidate(rules, { state });
+
+const { formatAmountOnMount, formatAmountToSave, formattedAmount, handleBlur, handleInput, handleKeydown } =
+  useMoneyInput({
+    form: state.expenseForm,
+  });
 
 const getExpenses = computed(() => {
   const expenses = props.expenses.filter((expense) => expense.budget_item_id === props.budgetItem.id);
@@ -213,6 +287,34 @@ function deleteBudgetItem(): void {
   });
 }
 
+async function addExpense(): Promise<void> {
+  const valid = await v$.value.$validate();
+  if (!valid) return;
+  try {
+    const { amount, name } = state.expenseForm;
+    const inputAmount = formatAmountToSave(amount);
+    state.loading.addExpense = true;
+    await BudgetExpenseApi.createBudgetExpense({
+      amount: inputAmount,
+      budget_item_id: props.budgetItem.id,
+      budget_month_id: props.budgetItem.budget_month_id,
+      name,
+    });
+    state.expenseForm.amount = "";
+    state.expenseForm.name = "";
+    emit("update:expenses");
+  } finally {
+    state.showQuickExpenseModal = false;
+  }
+}
+
+function showQuickExpenseModal(): void {
+  const budgetItem = props.budgetItem;
+  state.expenseForm.name = budgetItem.name;
+  state.expenseForm.amount = formatAmountOnMount(budgetItem.budgeted_amount);
+  state.showQuickExpenseModal = true;
+}
+
 function updateList(): void {
   state.edit = false;
   emit("update:list");
@@ -220,5 +322,8 @@ function updateList(): void {
 
 function cancel(): void {
   state.edit = false;
+  state.showQuickExpenseModal = false;
+  state.expenseForm.amount = "";
+  state.expenseForm.name = "";
 }
 </script>
