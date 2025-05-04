@@ -11,9 +11,19 @@ export class BudgetMonthApi {
     let error: Error | null = null;
 
     if (monthId) {
-      const result = await supabase.from("budget_months").select("*").eq("id", monthId);
-      data = result.data;
-      error = result.error;
+      const resultById = await supabase.from("budget_months").select("*").eq("id", monthId);
+
+      //if monthId is not found, we need to double check if the month exists
+      if (!resultById.data.length) {
+        const resultByDate = await supabase.from("budget_months").select("*").eq("month_start", month);
+        if (resultByDate.data.length) {
+          data = resultByDate.data;
+          error = resultByDate.error;
+        }
+      } else {
+        data = resultById.data;
+        error = resultById.error;
+      }
     } else if (month) {
       const result = await supabase.from("budget_months").select("*").eq("month_start", month);
       data = result.data;

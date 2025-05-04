@@ -212,6 +212,10 @@ async function setDefaultDate(): Promise<void> {
         name: "budget-month",
         params: { id: result.id },
       });
+    } else {
+      router.replace({
+        name: "budget",
+      });
     }
   } finally {
     state.loading.budgetMonth = false;
