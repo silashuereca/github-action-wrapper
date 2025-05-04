@@ -104,7 +104,7 @@
               <li v-for="budgetItem in group.items" :key="budgetItem.id" class="mb-3">
                 <EditBudgetItem
                   :budget-item="budgetItem"
-                  :can-delete="group.items.length > 1"
+                  can-delete
                   :tab="state.tab"
                   :expenses="state.budgetExpenses"
                   @update:list="refreshBudgetItems()"
@@ -276,11 +276,13 @@ function groupBudgetItems(items: TBudgetItem[]): { items: TBudgetItem[]; type: T
 
   const groupMap = new Map<TBudgetItem["type"], TBudgetItem[]>();
 
+  //create empty groups first
+  typeOrder.forEach((type) => {
+    groupMap.set(type, []);
+  });
+
   items.forEach((item) => {
-    if (!groupMap.has(item.type)) {
-      groupMap.set(item.type, []);
-    }
-    groupMap.get(item.type)!.push(item);
+    groupMap.get(item.type).push(item);
   });
 
   const groups = typeOrder
