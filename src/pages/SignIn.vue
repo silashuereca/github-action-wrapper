@@ -1,17 +1,27 @@
 <template>
   <div class="h-screen flex items-center justify-center">
-    <Button
-      type="button"
-      label="Sign In With Github"
-      severity="contrast"
-      icon="pi pi-github"
-      @click="signIn()"
-    />
+    <div class="flex flex-col">
+      <Button
+        type="button"
+        label="Sign In With Github"
+        severity="contrast"
+        icon="pi pi-github"
+        @click="signInGithub()"
+      />
+      <Button
+        class="mt-5"
+        type="button"
+        label="Sign In With Github"
+        severity="info"
+        icon="pi pi-google"
+        @click="signInGoogle()"
+      />
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import Button from "primevue/button";
 
-import { signIn } from "../hooks/auth";
+import { signInGithub, signInGoogle } from "../hooks/auth";
 </script>
