@@ -5,12 +5,13 @@
     </div>
     <section v-show="!state.loading.budgetMonth" class="w-full">
       <div class="flex justify-center items-center w-full">
-        <div class="sm:w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-          <div>
+        <div class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+          <div class="w-full">
             <DatePicker
               :model-value="state.selectedMonth"
               view="month"
               date-format="MM-yy"
+              fluid
               @update:model-value="selectMonth"
             />
           </div>
@@ -23,6 +24,10 @@
               :loading="state.loading.creatingBudget"
               @click="createBudget()"
             />
+          </div>
+
+          <div v-show="!state.loading.budgetMonth && state.budgetMonth" class="sm:flex sm:mt-0 sm:justify-end m-auto sm:m-0 w-full">
+            <InputText v-model="state.search" placeholder="Search for budget item..." fluid />
           </div>
         </div>
       </div>
@@ -123,9 +128,9 @@
 
 <script lang="ts" setup>
 import { DateTime } from "luxon";
-import { Panel, ProgressSpinner, Tab, TabList, Tabs } from "primevue";
+import { InputText, Panel, ProgressSpinner, Tab, TabList, Tabs } from "primevue";
 import { Button, DatePicker } from "primevue";
-import { onMounted, reactive } from "vue";
+import { onMounted, reactive, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
 import { supabase } from "../../../../supabase";
@@ -153,6 +158,7 @@ type TState = {
     budgetMonth: boolean;
     creatingBudget: boolean;
   };
+  search: string;
   selectedMonth: Date;
   tab: TTab;
 };
@@ -168,6 +174,7 @@ const state: TState = reactive({
     budgetMonth: true,
     creatingBudget: false,
   },
+  search: "",
   selectedMonth: null,
   tab: "planned",
 });
@@ -187,6 +194,13 @@ const {
 onMounted(() => {
   setDefaultDate();
 });
+
+watch(
+  () => state.search,
+  () => {
+    state.budgetItemGroups = groupBudgetItems(state.budgetItems);
+  },
+);
 
 function getMonthString(date: Date): string {
   return DateTime.fromJSDate(date).toFormat("yyyy-MM-dd");
@@ -289,14 +303,21 @@ function groupBudgetItems(items: TBudgetItem[]): { items: TBudgetItem[]; type: T
     groupMap.get(item.type).push(item);
   });
 
-  const groups = typeOrder
-    .filter((type) => groupMap.has(type))
-    .map((type) => ({
-      items: groupMap.get(type)!,
-      type,
-    }));
+  const normalizedQuery = state.search.trim().toLowerCase();
 
-  return groups;
+  return typeOrder
+    .map((type) => {
+      const groupItems = groupMap.get(type)!;
+
+      const matchesSearch =
+        !normalizedQuery ||
+        type.toLowerCase().includes(normalizedQuery) || // match category
+        groupItems.some((item) => item.name.toLowerCase().includes(normalizedQuery)); // match any item in the group
+
+      return { items: groupItems, matchesSearch, type };
+    })
+    .filter((group) => !normalizedQuery || group.matchesSearch)
+    .map(({ items, type }) => ({ items, type }));
 }
 
 async function fetchBudgetItems(): Promise<void> {
