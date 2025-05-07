@@ -64,7 +64,10 @@
           <!-- Sidebar component, swap this element with another sidebar if you like -->
           <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6 pb-2 ring-1 ring-white/10">
             <div class="flex h-16 shrink-0 items-center">
-              <img class="h-8 w-auto" src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500" alt="Your Company">
+              <img class="h-12 w-auto -ml-2.5" src="../assets/images/harthline-house.png" alt="Harthline">
+              <p class="text-white text-lg font-medium ml-2">
+                Harthline
+              </p>
             </div>
             <nav class="flex flex-1 flex-col">
               <ul role="list" class="flex flex-1 flex-col gap-y-7">
@@ -86,11 +89,10 @@
                   </ul>
                 </li>
                 <li class="-mx-6 mt-auto">
-                  <router-link :to="{ name: 'settings'}" class="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-white hover:bg-gray-800">
-                    <IconSettings class="size-8 rounded-full bg-gray-800" />
-                    <span class="sr-only">Your Profile</span>
-                    <span aria-hidden="true">Settings</span>
-                  </router-link>
+                  <button type="button" class="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-white hover:bg-gray-800" @click="logout">
+                    <IconArrowLeftAndOnRectangle class="size-6 rounded-full bg-gray-800" />
+                    <span aria-hidden="true">Logout</span>
+                  </button>
                 </li>
               </ul>
             </nav>
@@ -104,7 +106,10 @@
       <!-- Sidebar component, swap this element with another sidebar if you like -->
       <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-gray-900 px-6">
         <div class="flex h-16 shrink-0 items-center">
-          <img class="h-8 w-auto" src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=500" alt="Your Company">
+          <img class="h-12 w-auto -ml-2.5" src="../assets/images/harthline-house.png" alt="Harthline">
+          <p class="text-white text-lg font-medium ml-2">
+            Harthline
+          </p>
         </div>
         <nav class="flex flex-1 flex-col">
           <ul role="list" class="flex flex-1 flex-col gap-y-7">
@@ -125,19 +130,17 @@
                 </li>
               </ul>
             </li>
-            <li class="-mx-6 mt-auto">
-              <router-link :to="{ name: 'settings'}" class="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-white hover:bg-gray-800">
-                <IconSettings class="size-8 rounded-full bg-gray-800" />
-                <span class="sr-only">Your Profile</span>
-                <span aria-hidden="true">Settings</span>
-              </router-link>
+            <li class="-mx-6 mt-auto mb-5">
+              <button type="button" class="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-white hover:bg-gray-800" @click="logout">
+                <IconArrowLeftAndOnRectangle class="size-6 rounded-full bg-gray-800" />
+                <span aria-hidden="true">Logout</span>
+              </button>
             </li>
           </ul>
         </nav>
       </div>
     </div>
 
-    <!-- TODO: add support for mobile -->
     <div class="sticky top-0 z-40 flex items-center gap-x-6 bg-gray-900 px-4 py-4 shadow-sm sm:px-6 lg:hidden">
       <button type="button" class="-m-2.5 p-2.5 text-gray-400 lg:hidden" @click="openSidebarNav(true)">
         <span class="sr-only">Open sidebar</span>
@@ -173,9 +176,10 @@
 import { onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 
+import { supabase } from "../../supabase";
+import IconArrowLeftAndOnRectangle from "../icons/IconArrowLeftAndOnRectangle.vue";
 import IconCurrencyDollar from "../icons/IconCurrencyDollar.vue";
 import IconHome from "../icons/IconHome.vue";
-import IconSettings from "../icons/IconSettings.vue";
 const route = useRoute();
 const router = useRouter();
 
@@ -189,6 +193,11 @@ onMounted(() => {
     openSidebar.value = false;
   });
 });
+
+async function logout() {
+  await supabase.auth.signOut();
+  router.push("/sign-in");
+}
 
 function activeRouteClass(routeName: string): string {
   if (route.name === routeName) {

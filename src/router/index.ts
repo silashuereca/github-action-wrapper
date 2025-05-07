@@ -28,13 +28,6 @@ const routes = [
     name: "budget-item",
     path: "/budget/:id/budget-item/:itemId",
   },
-
-  {
-    component: () => import("../pages/dashboard/UserSettings.vue"),
-    meta: { layout: "dashboard" },
-    name: "settings",
-    path: "/settings",
-  },
   {
     component: () => import("../pages/SignUp.vue"),
     meta: { layout: "default" },
