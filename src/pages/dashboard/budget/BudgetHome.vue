@@ -345,6 +345,7 @@ async function createBudget(): Promise<void> {
   try {
     state.loading.creatingBudget = true;
     const { error } = await supabase.functions.invoke("create-budget", { body: { month: state.selectedMonth } });
+
     if (error) {
       console.error("Supabase error creating budget:", error);
       return;

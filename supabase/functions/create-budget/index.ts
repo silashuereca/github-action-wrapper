@@ -11,18 +11,24 @@ Deno.serve(async (req: Request) => {
   }
 
   try {
+    // Get the session or user object
+    const authHeader = req.headers.get("Authorization")!;
+    const token = authHeader.replace("Bearer ", "");
     const supabaseClient = createClient<Database>(
       // eslint-disable-next-line no-undef
       Deno.env.get("SUPABASE_URL") ?? "",
       // eslint-disable-next-line no-undef
       Deno.env.get("SUPABASE_ANON_KEY") ?? "",
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      },
     );
-    // Get the session or user object
-    const authHeader = req.headers.get("Authorization")!;
-    const token = authHeader.replace("Bearer ", "");
     const { month: monthRequest } = await req.json();
     const selectedMonth = DateTime.fromISO(monthRequest).toFormat("yyyy-MM-dd");
-
     const { data } = await supabaseClient.auth.getUser(token);
     const user = data.user;
 
@@ -32,6 +38,8 @@ Deno.serve(async (req: Request) => {
         status: 401,
       });
     }
+
+    let error = null;
 
     const { data: latestMonthRow } = await supabaseClient
       .from("budget_months")
@@ -83,10 +91,12 @@ Deno.serve(async (req: Request) => {
       }
     } else if (!currentMonthRows?.length) {
       // create a new budget month here
-      await supabaseClient.from("budget_months").insert({
+      const { error: createBudgetMonthError } = await supabaseClient.from("budget_months").insert({
         month_start: selectedMonth,
         user_id: user.id,
       });
+
+      error = createBudgetMonthError;
       const getCreatedMonth = await supabaseClient
         .from("budget_months")
         .select("*")
@@ -103,7 +113,7 @@ Deno.serve(async (req: Request) => {
           is_recurring: false,
         };
 
-        await supabaseClient.from("budget_items").insert([
+        const { error: createBudgetItemsError } = await supabaseClient.from("budget_items").insert([
           {
             ...budgetItem,
             name: "Paycheck 1",
@@ -160,11 +170,13 @@ Deno.serve(async (req: Request) => {
             type: "debt",
           },
         ]);
+
+        error = createBudgetItemsError;
       }
     }
 
     //I think the return response needs to just say it was successful
-    return new Response(JSON.stringify({ success: true }), {
+    return new Response(JSON.stringify({ error, success: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     });

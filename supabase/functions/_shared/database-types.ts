@@ -59,6 +59,7 @@ export type Database = {
           date?: string;
           id?: string;
           name: string;
+          user_id?: string;
         };
         Relationships: [
           {
@@ -84,6 +85,7 @@ export type Database = {
           date: string;
           id: string;
           name: string;
+          user_id: string;
         };
         Update: {
           amount?: number;
@@ -93,6 +95,7 @@ export type Database = {
           date?: string;
           id?: string;
           name?: string;
+          user_id?: string;
         };
       };
       budget_items: {
@@ -105,6 +108,7 @@ export type Database = {
           is_recurring?: boolean | null;
           name: string;
           type: Database["public"]["Enums"]["budget_category_type"];
+          user_id?: string;
         };
         Relationships: [
           {
@@ -124,6 +128,7 @@ export type Database = {
           is_recurring: boolean | null;
           name: string;
           type: Database["public"]["Enums"]["budget_category_type"];
+          user_id: string;
         };
         Update: {
           budget_month_id?: string | null;
@@ -134,6 +139,7 @@ export type Database = {
           is_recurring?: boolean | null;
           name?: string;
           type?: Database["public"]["Enums"]["budget_category_type"];
+          user_id?: string;
         };
       };
       budget_months: {
@@ -141,20 +147,20 @@ export type Database = {
           created_at?: string | null;
           id?: string;
           month_start: string;
-          user_id?: string | null;
+          user_id: string;
         };
         Relationships: [];
         Row: {
           created_at: string | null;
           id: string;
           month_start: string;
-          user_id: string | null;
+          user_id: string;
         };
         Update: {
           created_at?: string | null;
           id?: string;
           month_start?: string;
-          user_id?: string | null;
+          user_id?: string;
         };
       };
     };
