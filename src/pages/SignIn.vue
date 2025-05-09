@@ -11,7 +11,7 @@
       <Button
         class="mt-5"
         type="button"
-        label="Sign In With Github"
+        label="Sign In With Google"
         severity="info"
         icon="pi pi-google"
         @click="signInGoogle()"
