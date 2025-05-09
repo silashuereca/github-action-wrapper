@@ -25,10 +25,6 @@
               @click="createBudget()"
             />
           </div>
-
-          <div v-show="!state.loading.budgetMonth && state.budgetMonth" class="sm:flex sm:mt-0 sm:justify-end m-auto sm:m-0 w-full">
-            <InputText v-model="state.search" placeholder="Search for budget item..." fluid />
-          </div>
         </div>
       </div>
 
@@ -94,6 +90,10 @@
             <dd class="mt-1 text-2xl font-semibold tracking-tight text-slate-800" v-text="formatCurrency(remainingToSpendTotal)" />
           </div>
         </dl>
+      </div>
+
+      <div v-show="!state.loading.budgetMonth && state.budgetMonth" class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4 my-5">
+        <InputText v-model="state.search" placeholder="Search for budget item..." fluid />
       </div>
 
       <div v-if="state.budgetItems.length" class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
