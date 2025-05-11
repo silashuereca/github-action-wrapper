@@ -14,14 +14,34 @@
       </template>
       <template #content>
         <div class="flex items-center justify-between">
-          <h2 class="text-2xl font-bold ml-2" v-text="state.budgetItem?.name" />
+          <div>
+            <h2 class="text-2xl font-bold" v-text="state.budgetItem?.name" />
+            <div class="flex items-center">
+              <p class="text-green-500 text-xs" v-text="formatCurrency(totalExpenses)" />
+              <p class="text-xs mx-2">
+                spent of
+              </p>
+              <p class="text-gray-500 text-xs" v-text="formatCurrency(budgetAmount())" />
+            </div>
+          </div>
+          
       
-          <h2 class="text-2xl font-bold ml-2" v-text="formatCurrency(state.budgetItem?.budgeted_amount)" />
+          <div>
+            <p class="text-gray-500 text-xs text-end">
+              remaining
+            </p>
+            <h2 class="text-2xl font-bold ml-2" v-text="formatCurrency(remainingBudget)" />
+          </div>
         </div>
 
         <section v-show="state.expenses.length" class="mt-5">
           <DataTable :value="state.expenses">
-            <Column field="name" header="Name" />
+            <Column field="name" header="Name">
+              <template #body="slotProps">
+                <p v-text="slotProps.data.name" />
+                <p class="text-gray-500 text-xs" v-text="formatDate(slotProps.data.created_at)" />
+              </template>
+            </Column>
             <Column field="amount" header="Amount">
               <template #body="slotProps">
                 <div class="flex justify-between items-center">
@@ -127,10 +147,11 @@ import { useRoute, useRouter } from "vue-router";
 import { BudgetExpenseApi, TBudgetExpenseRow } from "../../../api/budget-expenses/api";
 import { BudgetItemApi, TBudgetItem } from "../../../api/budget-items/api";
 import { renderTypeHeader } from "../../../api/budget-items/utils";
+import { getTotal } from "../../../hooks/budget";
 import { useMoneyInput } from "../../../hooks/money-input";
 import IconArrowLeft from "../../../icons/IconArrowLeft.vue";
 import IconElipsisVertical from "../../../icons/IconElipsisVertical.vue";
-import { formatCurrency } from "../../../utils/common";
+import { formatCurrency, formatDate } from "../../../utils/common";
 
 type TState = {
   addOrEditTransaction: boolean;
@@ -198,6 +219,18 @@ const v$: any = useVuelidate(rules, { state });
 async function getExpenses(): Promise<void> {
   state.expenses = await BudgetExpenseApi.getBudgetExpenses({ id: budgetItemId });
 }
+
+function budgetAmount(): number {
+  return state.budgetItem?.budgeted_amount || 0;
+}
+
+const remainingBudget = computed(() => {
+  return budgetAmount() - totalExpenses.value;
+});
+
+const totalExpenses = computed(() => {
+  return getTotal(state.expenses.map((expense) => expense.amount));
+});
 
 async function createOrEditTransaction(): Promise<void> {
   const valid = await v$.value.$validate();
