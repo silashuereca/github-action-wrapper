@@ -96,30 +96,58 @@
         <InputText v-model="state.search" placeholder="Search for budget item..." fluid />
       </div>
 
-      <div v-if="state.budgetItems.length" class="w-full grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div v-for="group in state.budgetItemGroups" :key="group.type" class="w-full">
-          <Panel>
-            <template #header>
-              <div class="w-full flex justify-between items-center">
-                <h3 class="text-lg font-semibold text-gray-900" v-text="renderTypeHeader(group.type)" />
-                <p class="text-sm text-gray-600" v-text="renderTabTitle(group.type)" />
-              </div>
-            </template>
-            <ul>
-              <li v-for="budgetItem in group.items" :key="budgetItem.id" class="mb-3">
-                <EditBudgetItem
-                  :budget-item="budgetItem"
-                  :tab="state.tab"
-                  :expenses="state.budgetExpenses"
-                  @update:list="refreshBudgetItems()"
-                  @update:expenses="refreshBudgetExpenses()"
-                />
-              </li>
-              <li class="w-full">
-                <CreateBudgetItem :month-id="state.budgetMonth.id" :category="group.type" @update:list="refreshBudgetItems()" />
-              </li>
-            </ul>
-          </Panel>
+      <div v-if="state.budgetItems.length" class="w-full flex gap-0 sm:gap-4">
+        <div class="w-full">
+          <div v-for="group in getFirstHalfGroup()" :key="group.type" class="w-full mb-4">
+            <Panel>
+              <template #header>
+                <div class="w-full flex justify-between items-center">
+                  <h3 class="text-lg font-semibold text-gray-900" v-text="renderTypeHeader(group.type)" />
+                  <p class="text-sm text-gray-600" v-text="renderTabTitle(group.type)" />
+                </div>
+              </template>
+              <ul>
+                <li v-for="budgetItem in group.items" :key="budgetItem.id" class="mb-3">
+                  <EditBudgetItem
+                    :budget-item="budgetItem"
+                    :tab="state.tab"
+                    :expenses="state.budgetExpenses"
+                    @update:list="refreshBudgetItems()"
+                    @update:expenses="refreshBudgetExpenses()"
+                  />
+                </li>
+                <li class="w-full">
+                  <CreateBudgetItem :month-id="state.budgetMonth.id" :category="group.type" @update:list="refreshBudgetItems()" />
+                </li>
+              </ul>
+            </Panel>
+          </div>
+        </div>
+        <div class="w-full">
+          <div v-for="group in getSecondHalfGroup()" :key="group.type" class="w-full mb-4">
+            <Panel>
+              <template #header>
+                <div class="w-full flex justify-between items-center">
+                  <h3 class="text-lg font-semibold text-gray-900" v-text="renderTypeHeader(group.type)" />
+                  <p class="text-sm text-gray-600" v-text="renderTabTitle(group.type)" />
+                </div>
+              </template>
+              <ul>
+                <li v-for="budgetItem in group.items" :key="budgetItem.id" class="mb-3">
+                  <EditBudgetItem
+                    :budget-item="budgetItem"
+                    :tab="state.tab"
+                    :expenses="state.budgetExpenses"
+                    @update:list="refreshBudgetItems()"
+                    @update:expenses="refreshBudgetExpenses()"
+                  />
+                </li>
+                <li class="w-full">
+                  <CreateBudgetItem :month-id="state.budgetMonth.id" :category="group.type" @update:list="refreshBudgetItems()" />
+                </li>
+              </ul>
+            </Panel>
+          </div>
         </div>
       </div>
     </section>
@@ -276,6 +304,20 @@ function renderTabTitle(type: TBudgetItem["type"]): string {
   } else if (tab === "remaining") {
     return "Remaining";
   }
+}
+
+//write a function to only get groups from groupBudgetItems from income to food
+function getFirstHalfGroup(): TBudgetGroup[] {
+  const typeOrder: TBudgetItem["type"][] = ["income", "savings", "housing", "transportation", "food"];
+
+  return state.budgetItemGroups.filter((group) => typeOrder.includes(group.type));
+}
+
+//write a function to only get groups from groupBudgetItems from personal to debt
+function getSecondHalfGroup(): TBudgetGroup[] {
+  const typeOrder: TBudgetItem["type"][] = ["personal", "lifestyle", "health", "insurance", "debt"];
+
+  return state.budgetItemGroups.filter((group) => typeOrder.includes(group.type));
 }
 
 function groupBudgetItems(items: TBudgetItem[]): { items: TBudgetItem[]; type: TBudgetItem["type"] }[] {
