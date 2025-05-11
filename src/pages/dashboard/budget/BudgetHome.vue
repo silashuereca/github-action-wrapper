@@ -96,7 +96,7 @@
         <InputText v-model="state.search" placeholder="Search for budget item..." fluid />
       </div>
 
-      <div v-if="state.budgetItems.length" class="w-full flex gap-0 sm:gap-4">
+      <div v-if="state.budgetItems.length" class="w-full flex flex-col sm:flex-row sm:gap-4">
         <div class="w-full">
           <div v-for="group in getFirstHalfGroup()" :key="group.type" class="w-full mb-4">
             <Panel>
