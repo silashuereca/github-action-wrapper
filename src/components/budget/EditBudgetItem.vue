@@ -305,6 +305,7 @@ async function addExpense(): Promise<void> {
     emit("update:expenses");
   } finally {
     state.showQuickExpenseModal = false;
+    state.loading.addExpense = false;
   }
 }
 
