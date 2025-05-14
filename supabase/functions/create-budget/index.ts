@@ -4,6 +4,7 @@ import { DateTime } from "npm:luxon";
 import { corsHeaders } from "../_shared/cores.ts";
 import { Database } from "../_shared/database-types.ts";
 
+type TBudgetItemInsert = Database["public"]["Tables"]["budget_items"]["Insert"];
 // eslint-disable-next-line no-undef
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
@@ -77,15 +78,18 @@ Deno.serve(async (req: Request) => {
           is_paid: false,
           is_recurring: false,
         };
-        const budgetItems = rows?.map((row) => {
+
+        const budgetItems: TBudgetItemInsert[] = (rows ?? []).map((row) => {
           return {
             ...budgetItem,
+            budgeted_amount: row.budgeted_amount,
             name: row.name,
             type: row.type,
+            user_id: user.id,
           };
         });
 
-        if (budgetItems?.length) {
+        if (budgetItems.length) {
           await supabaseClient.from("budget_items").insert(budgetItems);
         }
       }

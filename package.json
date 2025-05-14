@@ -12,7 +12,7 @@
     "run-migration": "supabase db diff --use-migra -f",
     "gen:types": "npx supabase gen types typescript --local | sed '1s;^;/* eslint-disable no-unused-vars */\\n\\n;' > supabase/functions/_shared/database-types.ts",
     "deploy-migration": "supabase db push",
-    "watch-functions": "supabase functions serve --watch",
+    "watch-functions": "supabase functions serve",
     "create-function": "supabase functions new",
     "deploy-functions": "supabase functions deploy",
     "deploy-all": "supabase functions deploy && supabase db push"
