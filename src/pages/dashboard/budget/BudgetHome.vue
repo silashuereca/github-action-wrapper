@@ -364,8 +364,8 @@ function groupBudgetItems(items: TBudgetItem[]): { items: TBudgetItem[]; type: T
 
 async function fetchBudgetItems(): Promise<void> {
   const result = await BudgetItemApi.getBudgetItems(state.budgetMonth.id);
-  const expense = await BudgetExpenseApi.getAllMonthlyExpenses({ budgetMonthId: state.budgetMonth.id });
-  state.budgetExpenses = expense;
+  const expenses = await BudgetExpenseApi.getAllMonthlyExpenses({ budgetMonthId: state.budgetMonth.id });
+  state.budgetExpenses = expenses;
   state.budgetItems = result;
   state.budgetItemGroups = groupBudgetItems(result);
 }
@@ -395,6 +395,8 @@ async function createBudget(): Promise<void> {
 
     const month = getMonthString(state.selectedMonth);
     const result = await BudgetMonthApi.getBudgetMonth({ month });
+    const expenses = await BudgetExpenseApi.getAllMonthlyExpenses({ budgetMonthId: result.id });
+    state.budgetExpenses = expenses;
 
     if (result) {
       state.budgetMonth = result;
